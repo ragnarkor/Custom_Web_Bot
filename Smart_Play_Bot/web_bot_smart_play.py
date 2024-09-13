@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
+import time
 
 class SmartPlayBot:
 
@@ -97,7 +98,7 @@ class SmartPlayBot:
         self.LoginPage = self.driver.current_window_handle
         print(f"LoginPage: {self.LoginPage}")
         
-        ### Use IamSmart Login
+        ### Use IamSmart Login -- Not support IamSmart Login Now
         if username_xpath is None and password_xpath is None:
 
             print("\nLoading for iAM Smart Login")
@@ -119,10 +120,10 @@ class SmartPlayBot:
         if IamSmart_button_xpath is None:
 
             UsernameField = self.driver.find_element(By.XPATH, username_xpath)
-            UsernameField.send_keys("GG1234")
+            UsernameField.send_keys("")
 
             PasswordField = self.driver.find_element(By.XPATH, password_xpath)
-            PasswordField.send_keys("GG1234")
+            PasswordField.send_keys("")
 
 
             WebDriverWait(self.driver, wait_time).until(
@@ -132,20 +133,141 @@ class SmartPlayBot:
             LoginButton = self.driver.find_element(By.XPATH, login_button_xpath)
             self.driver.execute_script("arguments[0].click();", LoginButton)
 
-    def booking(self, wait_time:int = 200):
+    def search_available_period(self, wait_time:int = 5):
 
-        self.driver.switch_to.window(self.driver.window_handles[-1])
+        ### Load Sport, date, district selection page
+        FacultyXPATH = "//span[@data-v-49217096 and text()='設施']"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.element_to_be_clickable((By.XPATH, FacultyXPATH))
+        )
+        FacultyButton = self.driver.find_element(By.XPATH, FacultyXPATH)
+        self.driver.execute_script("arguments[0].click();", FacultyButton)
 
-        print(self.driver.window_handles)
+        ### Select Sport
+        InputBarXPATH = "//div[@data-v-429aaa46 and @data-v-012d0593 and @class='text']"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, InputBarXPATH))
+        ).click()
 
-        # FacultyXPATH = "//span[@class='weight-bold']"
+        TextAreaXPATH = "//input[@data-v-21e43f8c and @data-v-42c8b4a0]"
+        TextArea = self.driver.find_element(By.XPATH, TextAreaXPATH)
+        TextArea.send_keys('乒乓球')
 
-        # WebDriverWait(self.driver, wait_time).until(
-        #     EC.element_to_be_clickable((By.XPATH, FacultyXPATH))
-        # )
+        PingPongXPATH = "//div[@class='search-associate-tab-item']/p[text()='乒乓球']"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, PingPongXPATH))
+        ).click()
 
-        # FacultyButton = self.driver.find_element(By.XPATH, FacultyXPATH)
-        # self.driver.execute_script("arguments[0].click();", FacultyButton)
+        ### Select District
+        DistrictBarXPATH = "//div[@data-v-5528557e and @class='sp-select-value']"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, DistrictBarXPATH))
+        ).click()
+
+        DistrictXPATH = "//div[@class='programme-district-box' and .//div[text()='九龍']]"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, DistrictXPATH))
+        ).click()
+
+        ### Select Date
+        DateInputXPATH = "//input[@type='text' and @class='el-input__inner']"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, DateInputXPATH))
+        ).click()
+
+        DateXPATH = "//td[@class='available free-date' and .//span[normalize-space(text())='19']]"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, DateXPATH))
+        ).click()
+
+        ### Search
+        SearchButtonXPATH = "//div[@data-v-ff4d1da4 and @role='button' and text()='搜尋']"
+        SearchButton = self.driver.find_element(By.XPATH, SearchButtonXPATH)
+        self.driver.execute_script("arguments[0].click();", SearchButton)
+
+    def book(self, wait_time:int = 5):
+
+        ### Select Time Slot by District
+        TimeSlotXPATH = "//h3[@class='venuen-name' and contains(text(), '何文田體育館')]/ancestor::div[@class='el-row chooseTime commonFlex']//div[@data-v-196fdd38 and contains(text(), '乒乓球檯 (空調)(市區)')]/ancestor::div[@class='el-row']//div[@class='time flex' and text()='上午7時']"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, TimeSlotXPATH))
+        )
+        TimeSlotButton = self.driver.find_element(By.XPATH, TimeSlotXPATH)
+        self.driver.execute_script("arguments[0].click();", TimeSlotButton)
+        # self.driver.execute_script("arguments[0].innerText = arguments[1];", TimeSlotButton, "test")
+
+
+
+        ### Click confirm
+        ConfirmTimeXPATH = "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '繼續')]"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, ConfirmTimeXPATH))
+        )
+        ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmTimeXPATH)
+
+        ### Scroll down & click confirm
+        prev_height = self.driver.execute_script("return document.body.scrollHeight")
+        while True:
+            # Scroll down to the bottom
+            # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
+
+            time.sleep(1)
+            
+            # Calculate new height and compare with the previous height
+            new_height = self.driver.execute_script("return document.body.scrollHeight")
+
+            if new_height == prev_height:
+                self.driver.execute_script("arguments[0].click();", ConfirmTimeButton)
+                break  # Exit the loop if no new content is loaded
+            prev_height = new_height
+
+        ClosePopupXPATH = "//div[@class='cancel-button' and contains(text(),  '否')]"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located((By.XPATH, ClosePopupXPATH))
+        )
+        ClosePopButton = self.driver.find_element(By.XPATH, ClosePopupXPATH)
+        self.driver.execute_script("arguments[0].click();", ClosePopButton)
+
+
+
+        ConfirmToPayXPATH = "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '繼續')]"
+        ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmToPayXPATH)
+        self.driver.execute_script("arguments[0].innerText = arguments[1];", ConfirmToPayXPATH, "test")
+
+        ### Scroll down & click confirm
+        prev_height = self.driver.execute_script("return document.body.scrollHeight")
+        while True:
+            # Scroll down to the bottom
+            # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
+
+            time.sleep(1)
+            
+            # Calculate new height and compare with the previous height
+            new_height = self.driver.execute_script("return document.body.scrollHeight")
+
+            if new_height == prev_height:
+                self.driver.execute_script("arguments[0].click();", ConfirmTimeButton)
+                break  # Exit the loop if no new content is loaded
+            prev_height = new_height
+
+
+        ## Click checkbox
+        checkbox_1_XPATH = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//*[@id='app']/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[1]/div/div[1]"))
+        ).click()
+
+
+        checkbox_2_XPATH = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//*[@id='app']/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[2]/div/div[1]"))
+        ).click()
+
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '確認並同意 ')]"))
+        ).click()
+
+
 
 
 if __name__ == "__main__":
@@ -154,30 +276,43 @@ if __name__ == "__main__":
     ### Setup Driver
     bot = SmartPlayBot(URL=URL)
 
-    bot.set_options(keep_alive=True)
+    SettingOptions = ["--disable-gpu",
+                      "--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"]
+
+    bot.set_options(keep_alive=True, options_list=SettingOptions)
 
     bot.load_driver(max_window=True)
 
 
     ### Load login page
-    LoginButtonXPATH = "//span[@class='btn__inner']"
+    LoginButtonXPATH = "//span[@class='btn__inner' and text()='登入']"
 
     bot.get_login_page(login_button_xpath=LoginButtonXPATH)
 
 
     ### Login processing
-    IamSmart_button_xpath = "//div[@class='smart']"
-    bot.login(IamSmart_button_xpath=IamSmart_button_xpath)
+    # IamSmart_button_xpath = "//div[@class='smart']"
+    # bot.login(IamSmart_button_xpath=IamSmart_button_xpath)
 
-    # username_xpath = "//input[@name='pc-login-username']"
-    # password_xpath = "//input[@name='pc-login-password']"
-    # login_button_xpath = "//div[contains(text(), '登錄') or contains(text(), 'Login')]"
+    username_xpath = "//input[@name='pc-login-username']"
+    password_xpath = "//input[@name='pc-login-password']"
+    login_button_xpath = "//div[contains(text(), '登錄') or contains(text(), 'Login')]"
 
-    # bot.login(username_xpath=username_xpath,
-    #           password_xpath=password_xpath,
-    #           login_button_xpath=login_button_xpath)
+    bot.login(username_xpath=username_xpath,
+              password_xpath=password_xpath,
+              login_button_xpath=login_button_xpath)
+
+    ### Search booking time slot
+    bot.search_available_period()
+
+
+    ### Book
+    bot.book()
 
 
 
-    ### Booking processing
-    bot.booking()
+
+#################################################
+# All Work (Edited at: 2024/09/13 18:15)
+# Username & Password omitted!!!!
+#################################################
