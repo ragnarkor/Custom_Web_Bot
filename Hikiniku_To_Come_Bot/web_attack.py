@@ -6,7 +6,9 @@ from selenium.webdriver.common.keys import Keys
 from datetime import datetime, date, timedelta
 from selenium.webdriver.common.alert import Alert
 
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, UnexpectedAlertPresentException
+
+import time
 
 class Booking_Bot:
 
@@ -163,51 +165,59 @@ class Booking_Bot:
 
                 print("Clicked booking button ......")
 
-                ### Handle booking being booked by others
-                WebDriverWait(self.driver, 10).until(
-                    EC.visibility_of_element_located((By.XPATH, "//button[contains(text(), 'OK')]"))
-                )
+                alert = WebDriverWait(self.driver, 10).until(EC.alert_is_present())
 
-                # Find and click the OK button
-                ok_button = self.driver.find_element(By.XPATH, "//button[contains(text(), 'OK')]")
-                self.driver.execute_script("arguments[0].click();", ok_button)
+                print(alert)
 
-                ### pop up windows
-                PopUpWindow = self.driver.find_element(By.XPATH, "//div[@id='house-rules']")
-                PopUpWindow.send_keys(Keys.END)
+                # Accept the alert (click OK)
+                alert.accept()
+
+
+
+                # ### Scroll down pop up windows & click confirm
+                # ConfirmTimeXPATH = "//button[@data-cy='confirm-house-rule' and @class='sc-hHLeRK fyDsji']"
+
+                # WebDriverWait(self.driver, WaitTime).until(
+                #     EC.visibility_of_element_located((By.XPATH, ConfirmTimeXPATH))
+                # )
+                # ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmTimeXPATH)
+
+                # print("Scroll Down")
+
+                # prev_height = self.driver.execute_script("return document.body.scrollHeight")
+                # while True:
+                #     # Scroll down to the bottom
+                #     # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                #     self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
+
+                #     time.sleep(1)
+                    
+                #     # Calculate new height and compare with the previous height
+                #     new_height = self.driver.execute_script("return document.body.scrollHeight")
+
+                #     if new_height == prev_height:
+                #         self.driver.execute_script("arguments[0].click();", ConfirmTimeButton)
+                #         break  # Exit the loop if no new content is loaded
+                #     prev_height = new_height
 
             except NoSuchElementException:
                 print(f"Time Slot: {time_slot} is full or Cannot not find time slot xpath: {TimeSlotXPATH}")
 
+            # except UnexpectedAlertPresentException:
+            #     ### Handle alert
+            #     self.driver.switch_to.alert.accept()
+            #     print("Accepted")
+
             except TimeoutException:
                 print(f"Cannot find the button xpath: {BookingButtonXPATH}")
 
-        # try:
-        #     ### Select time slot
-        #     TimeSlotSelection = self.driver.find_element(By.XPATH, TimeSlotXPATH)
-        #     self.driver.execute_script("arguments[0].click();", TimeSlotSelection)
-
-        #     print("\nSelect time slot ......")
-
-        #     WebDriverWait(self.driver, WaitTime).until(
-        #         EC.presence_of_element_located((By.XPATH, BookingButtonXPATH))
-        #     )
-
-        #     BookingButton = self.driver.find_element(By.XPATH, BookingButtonXPATH)
-        #     self.driver.execute_script("arguments[0].click();", BookingButton)
-
-        #     print("Click book button ......")
-
-        # except NoSuchElementException:
-        #     raise NoSuchElementException(f"Cannot not find time slot xpath: {TimeSlotXPATH} or bookging button xpath: {BookingButtonXPATH}") from None
-        
 
 
 if __name__ == "__main__":
 
     URL = "https://inline.app/booking/-NxpjjSJhxwTw6cV0Lm3:inline-live-3/-Nxpjjmuxwpudr9s2kHN"
     PartySize = 1
-    TimeSlot = ["11-00", "11-45", "16-00"]
+    TimeSlot = ["21-00"]
 
     bot = Booking_Bot(URL=URL, PartySize=PartySize, TimeSlot=TimeSlot)
 
