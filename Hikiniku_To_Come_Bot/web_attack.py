@@ -6,6 +6,10 @@ from selenium.webdriver.common.keys import Keys
 from datetime import datetime, date, timedelta
 from selenium.webdriver.common.alert import Alert
 
+
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, UnexpectedAlertPresentException
 
 import time
@@ -53,6 +57,7 @@ class Booking_Bot:
             for setting in SettingOptions:
                 self.options.add_argument(setting)
 
+
     def Load_driver(self, KeepAlive:bool = False) -> None:
         """Build Chrome driver based on the setup_options() & Access the URL
 
@@ -64,6 +69,7 @@ class Booking_Bot:
 
         self.driver = uc.Chrome(options=self.options, enable_cdp_events=KeepAlive)
         self.driver.get(self.URL)
+
 
     def select_partysize(self, WaitTime:int = 5, XPATH:str = None) -> None:
         """Select the number of person
@@ -91,6 +97,7 @@ class Booking_Bot:
         except TimeoutException:
             raise TimeoutException(f"\nTimeout! Cannot find XPATH: {XPATH}") from None
 
+
     def select_date(self, WaitTime:int = 5, DateID:str = None, CalendarID:str = None, DateXPATH:str = None) -> None:
         """Expand & Unhide calendar, Select date
 
@@ -108,11 +115,12 @@ class Booking_Bot:
             CalendarID = "calendar-picker"
 
         if DateXPATH is None:
-            DateAfter7Days = date.today() + timedelta(days=7)
+            DateAfter7Days = date.today() + timedelta(days=5)
+            # DateAfter7Days = datetime(2024, 9, 23) + timedelta(days=7)
             DateXPATH = f"//div[@data-cy='bt-cal-day' and @data-date='{DateAfter7Days.strftime('%Y-%m-%d')}']"
 
         try:
-            print("\nSearching calendar element ......")
+            # print("\nSearching calendar element ......")
 
             ### Expand the calendar & Unhide
             DateSelectionBox = self.driver.find_element(By.ID, DateID)
@@ -125,13 +133,14 @@ class Booking_Bot:
 
             ### Select date from calendar
             CalendarDatePicker = self.driver.find_element(By.XPATH, DateXPATH)
-            self.driver.execute_script("arguments[0].click();", CalendarDatePicker)
+            self.driver.execute_script("arguments[0].click()", CalendarDatePicker)
 
             print("Date selected ......")
 
         except NoSuchElementException:
             raise NoSuchElementException(f"Cannot find the date ID: `{DateID}` or calendar ID: `{CalendarID}` or date xpath: `{DateXPATH}`") from None
-        
+
+
     def select_time_slot(self, WaitTime:int = 5, TimeSlotXPATH_template:str = None, BookingButtonXPATH:str = None):
 
         ### Set xpath config
@@ -165,32 +174,50 @@ class Booking_Bot:
 
                 print("Clicked booking button ......")
 
-                alert = WebDriverWait(self.driver, 10).until(EC.alert_is_present())
 
-                print(alert)
+                # alert = WebDriverWait(self.driver, 10).until(EC.alert_is_present())
 
-                # Accept the alert (click OK)
-                alert.accept()
-
+                # # Accept the alert (click OK)
+                # alert.accept()
 
 
-                # ### Scroll down pop up windows & click confirm
-                # ConfirmTimeXPATH = "//button[@data-cy='confirm-house-rule' and @class='sc-hHLeRK fyDsji']"
+                ### Scroll down pop up windows & click confirm
+                ConfirmTimeXPATH = "//button[@data-cy='confirm-house-rule' and @class='sc-hHLeRK fyDsji']"
 
-                # WebDriverWait(self.driver, WaitTime).until(
-                #     EC.visibility_of_element_located((By.XPATH, ConfirmTimeXPATH))
-                # )
-                # ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmTimeXPATH)
+                WebDriverWait(self.driver, WaitTime).until(
+                    EC.visibility_of_element_located((By.XPATH, ConfirmTimeXPATH))
+                )
+                ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmTimeXPATH)
 
-                # print("Scroll Down")
+                print("Scroll Down")
+
+                WebDriverWait(self.driver, WaitTime).until(
+                    EC.visibility_of_element_located((By.CLASS_NAME, "ReactModal__Content"))
+                )
+ 
+
+                # Locate the modal element
+                modal_element = self.driver.find_element(By.XPATH, "/html/body/div[4]/div/div/div/div[2]")
+
+                scroll_origin = ScrollOrigin.from_element(modal_element)
+                ActionChains(self.driver)\
+                    .scroll_from_origin(scroll_origin, 0, 2000)\
+                    .perform()
+
+
 
                 # prev_height = self.driver.execute_script("return document.body.scrollHeight")
                 # while True:
                 #     # Scroll down to the bottom
-                #     # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                #     self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
+                #     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                #     # self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
 
                 #     time.sleep(1)
+
+
+                #     'sc-hHLeRK fyDsji'
+                #     'sc-hHLeRK dUzBnh'
+
                     
                 #     # Calculate new height and compare with the previous height
                 #     new_height = self.driver.execute_script("return document.body.scrollHeight")
@@ -208,8 +235,8 @@ class Booking_Bot:
             #     self.driver.switch_to.alert.accept()
             #     print("Accepted")
 
-            except TimeoutException:
-                print(f"Cannot find the button xpath: {BookingButtonXPATH}")
+            # except TimeoutException:
+            #     print(f"Cannot find the button xpath: {BookingButtonXPATH}")
 
 
 
@@ -217,7 +244,8 @@ if __name__ == "__main__":
 
     URL = "https://inline.app/booking/-NxpjjSJhxwTw6cV0Lm3:inline-live-3/-Nxpjjmuxwpudr9s2kHN"
     PartySize = 1
-    TimeSlot = ["21-00"]
+    TimeSlot = ["21-15"]
+    # TimeSlot = ["17-00"]
 
     bot = Booking_Bot(URL=URL, PartySize=PartySize, TimeSlot=TimeSlot)
 
@@ -235,5 +263,6 @@ if __name__ == "__main__":
 
     ### Select the date
     bot.select_date()
+
 
     bot.select_time_slot()
