@@ -135,6 +135,8 @@ class SmartPlayBot:
 
     def search_available_period(self, wait_time:int = 5):
 
+        time.sleep(0.5)
+
         ### Load Sport, date, district selection page
         FacultyXPATH = "//span[@data-v-49217096 and text()='設施']"
         WebDriverWait(self.driver, wait_time).until(
@@ -143,11 +145,15 @@ class SmartPlayBot:
         FacultyButton = self.driver.find_element(By.XPATH, FacultyXPATH)
         self.driver.execute_script("arguments[0].click();", FacultyButton)
 
+        time.sleep(0.5)
+
         ### Select Sport
         InputBarXPATH = "//div[@data-v-429aaa46 and @data-v-012d0593 and @class='text']"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, InputBarXPATH))
         ).click()
+
+        time.sleep(0.5)
 
         TextAreaXPATH = "//input[@data-v-21e43f8c and @data-v-42c8b4a0]"
         TextArea = self.driver.find_element(By.XPATH, TextAreaXPATH)
@@ -158,16 +164,22 @@ class SmartPlayBot:
             EC.visibility_of_element_located((By.XPATH, PingPongXPATH))
         ).click()
 
+        time.sleep(0.5)
+
         ### Select District
         DistrictBarXPATH = "//div[@data-v-5528557e and @class='sp-select-value']"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, DistrictBarXPATH))
         ).click()
 
+        time.sleep(0.5)
+
         DistrictXPATH = "//div[@class='programme-district-box' and .//div[text()='九龍']]"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, DistrictXPATH))
         ).click()
+
+        time.sleep(0.5)
 
         ### Select Date
         DateInputXPATH = "//input[@type='text' and @class='el-input__inner']"
@@ -175,7 +187,7 @@ class SmartPlayBot:
             EC.visibility_of_element_located((By.XPATH, DateInputXPATH))
         ).click()
 
-        DateXPATH = "//td[@class='available free-date' and .//span[normalize-space(text())='19']]"
+        DateXPATH = "//td[@class='available free-date' and .//span[normalize-space(text())='30']]"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, DateXPATH))
         ).click()
@@ -188,7 +200,7 @@ class SmartPlayBot:
     def book(self, wait_time:int = 5):
 
         ### Select Time Slot by District
-        TimeSlotXPATH = "//h3[@class='venuen-name' and contains(text(), '何文田體育館')]/ancestor::div[@class='el-row chooseTime commonFlex']//div[@data-v-196fdd38 and contains(text(), '乒乓球檯 (空調)(市區)')]/ancestor::div[@class='el-row']//div[@class='time flex' and text()='上午7時']"
+        TimeSlotXPATH = "//h3[@class='venuen-name' and contains(text(), '何文田體育館')]/ancestor::div[@class='el-row chooseTime commonFlex']//div[@data-v-196fdd38 and contains(text(), '乒乓球檯 (空調)(市區)')]/ancestor::div[@class='el-row']//div[@class='time flex' and text()='上午8時']"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, TimeSlotXPATH))
         )
@@ -268,6 +280,42 @@ class SmartPlayBot:
         ).click()
 
 
+    def payment(self):
+
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '確認付款')]"))
+        ).click()
+
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "/html/body/div/div[2]/div[1]/div/div/div/div[2]/div[7]/div[2]/img"))
+        ).click()
+
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "/html/body/div/div[2]/div[1]/div/div/div/div[4]/div[2]/div"))
+        ).click()
+
+        print(self.driver.current_url)
+
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "/html/body/app-root/app-payment-detail-form/div/div/div/div/div[1]/div[2]/form/div[1]/app-payment-method-card-layout/div[2]/app-payment-method-card/div/div/div/div[1]/div/label/span"))
+        ).click()
+
+        print(self.driver.current_url)
+
+        CardOwnerXPATH = "/html/body/input[1]"
+        CardOwner = self.driver.find_element(By.XPATH, CardOwnerXPATH)
+        CardOwner.send_keys('Chan Tai Man')
+
+        CardNumberXPATH = "/html/body/input[2]"
+        CardNumber = self.driver.find_element(By.XPATH, CardNumberXPATH)
+        CardNumber.send_keys('5423602760838913')
+
+        CardNumberXPATH = "//*[@id='securityCode']"
+        CardNumber = self.driver.find_element(By.XPATH, CardNumberXPATH)
+        CardNumber.send_keys('903')
+
+
+
 
 
 if __name__ == "__main__":
@@ -310,9 +358,13 @@ if __name__ == "__main__":
     bot.book()
 
 
+    bot.payment()
+
+
 
 
 #################################################
-# All Work (Edited at: 2024/09/13 18:15)
+# All Work (Edited at: 2024/09/25 00:11)
+# Input credit card function is not tested yet
 # Username & Password omitted!!!!
 #################################################
