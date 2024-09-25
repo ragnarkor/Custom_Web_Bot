@@ -115,7 +115,7 @@ class Booking_Bot:
             CalendarID = "calendar-picker"
 
         if DateXPATH is None:
-            DateAfter7Days = date.today() + timedelta(days=5)
+            DateAfter7Days = date.today() + timedelta(days=7)
             # DateAfter7Days = datetime(2024, 9, 23) + timedelta(days=7)
             DateXPATH = f"//div[@data-cy='bt-cal-day' and @data-date='{DateAfter7Days.strftime('%Y-%m-%d')}']"
 
@@ -203,32 +203,14 @@ class Booking_Bot:
                 ActionChains(self.driver)\
                     .scroll_from_origin(scroll_origin, 0, 2000)\
                     .perform()
+                
+                
+                # ConfirmButton = self.driver.find_element(By.XPATH, "/html/body/div[4]/div/div/div/div[3]/button/span")
+                # self.driver.execute_script("arguments[0].click();", ConfirmButton)
 
 
-
-                # prev_height = self.driver.execute_script("return document.body.scrollHeight")
-                # while True:
-                #     # Scroll down to the bottom
-                #     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                #     # self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
-
-                #     time.sleep(1)
-
-
-                #     'sc-hHLeRK fyDsji'
-                #     'sc-hHLeRK dUzBnh'
-
-                    
-                #     # Calculate new height and compare with the previous height
-                #     new_height = self.driver.execute_script("return document.body.scrollHeight")
-
-                #     if new_height == prev_height:
-                #         self.driver.execute_script("arguments[0].click();", ConfirmTimeButton)
-                #         break  # Exit the loop if no new content is loaded
-                #     prev_height = new_height
-
-            except NoSuchElementException:
-                print(f"Time Slot: {time_slot} is full or Cannot not find time slot xpath: {TimeSlotXPATH}")
+            # except NoSuchElementException:
+            #     print(f"Time Slot: {time_slot} is full or Cannot not find time slot xpath: {TimeSlotXPATH}")
 
             # except UnexpectedAlertPresentException:
             #     ### Handle alert
@@ -237,6 +219,8 @@ class Booking_Bot:
 
             # except TimeoutException:
             #     print(f"Cannot find the button xpath: {BookingButtonXPATH}")
+            except:
+                pass
 
 
 
