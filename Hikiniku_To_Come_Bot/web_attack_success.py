@@ -116,6 +116,7 @@ class Booking_Bot:
 
         if DateXPATH is None:
             DateAfter7Days = date.today() + timedelta(days=7)
+            print(DateAfter7Days)
             # DateAfter7Days = datetime(2024, 9, 23) + timedelta(days=7)
             DateXPATH = f"//div[@data-cy='bt-cal-day' and @data-date='{DateAfter7Days.strftime('%Y-%m-%d')}']"
 
@@ -182,14 +183,13 @@ class Booking_Bot:
 
 
                 ### Scroll down pop up windows & click confirm
-                ConfirmTimeXPATH = "//button[@data-cy='confirm-house-rule' and @class='sc-hHLeRK fyDsji']"
+                # ConfirmTimeXPATH = "//button[@data-cy='confirm-house-rule' and @class='sc-hHLeRK fyDsji']"
 
-                WebDriverWait(self.driver, WaitTime).until(
-                    EC.visibility_of_element_located((By.XPATH, ConfirmTimeXPATH))
-                )
-                ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmTimeXPATH)
+                # WebDriverWait(self.driver, WaitTime).until(
+                #     EC.visibility_of_element_located((By.XPATH, ConfirmTimeXPATH))
+                # )
+                # ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmTimeXPATH)
 
-                print("Scroll Down")
 
                 WebDriverWait(self.driver, WaitTime).until(
                     EC.visibility_of_element_located((By.CLASS_NAME, "ReactModal__Content"))
@@ -204,9 +204,13 @@ class Booking_Bot:
                     .scroll_from_origin(scroll_origin, 0, 2000)\
                     .perform()
                 
-                
-                # ConfirmButton = self.driver.find_element(By.XPATH, "/html/body/div[4]/div/div/div/div[3]/button/span")
-                # self.driver.execute_script("arguments[0].click();", ConfirmButton)
+                time.sleep(1)
+
+                WebDriverWait(self.driver, WaitTime).until(
+                    EC.visibility_of_element_located((By.XPATH, "/html/body/div[4]/div/div/div/div[3]/button/span"))
+                )
+                ConfirmButton = self.driver.find_element(By.XPATH, "/html/body/div[4]/div/div/div/div[3]/button/span")
+                self.driver.execute_script("arguments[0].click();", ConfirmButton)
 
 
             # except NoSuchElementException:
@@ -250,3 +254,5 @@ if __name__ == "__main__":
 
 
     bot.select_time_slot()
+
+
