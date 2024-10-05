@@ -48,7 +48,8 @@ def main(
     bot = Booking(driver)
     bot.select_partysize(party_size)
 
-
+    # date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='2024-10-13']"
+    bot.select_date()
 
 
 
