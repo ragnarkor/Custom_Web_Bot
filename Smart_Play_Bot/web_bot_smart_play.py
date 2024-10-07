@@ -1,3 +1,6 @@
+import argparse
+import sys
+import traceback
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -10,22 +13,26 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 import time
 
+
 class SmartPlayBot:
 
-    def __init__(self, URL:str) -> None:
-        
+    def __init__(self, URL: str, usename: str, password: str, usingDocker: bool) -> None:
+
         self.URL = URL
         self.options = None
         self.driver = None
+        self.usingDocker = usingDocker
 
         self.HomePage = None
         self.LoginPage = None
+        self.username = usename
+        self.password = password
 
         print("\nSmart Play Booking Bot Start ......")
 
     def set_options(self,
-                    keep_alive:bool = False,
-                    options_list:list[str] = None):
+                    keep_alive: bool = False,
+                    options_list: list[str] = None):
         """
         Setup driver config
 
@@ -33,24 +40,33 @@ class SmartPlayBot:
             keep_alive: Keep the browser open after run the code
             options_list: A list of arguments for driver config
         """
-        
+
         self.options = Options()
-        
+        if self.usingDocker:
+            self.options.add_argument('--ignore-ssl-errors=yes')
+            self.options.add_argument('--ignore-certificate-errors')
+
         if keep_alive:
             self.options.add_experimental_option("detach", True)
-        
+
         if options_list:
             for option in options_list:
                 self.options.add_argument(option)
-    
-    def load_driver(self, max_window = True):
+
+    def load_driver(self, max_window=True):
         """
         Load chrome driver & Access to URL
 
         Args:
             max_window: Determine if maximize window
         """
-        self.driver = webdriver.Chrome(options=self.options)
+        if self.usingDocker:
+            self.driver = webdriver.Remote(
+                command_executor='http://172.17.0.3:4444',
+                options=self.options
+            )
+        else:
+            self.driver = webdriver.Chrome(options=self.options)
         self.driver.get(self.URL)
 
         print(f"\nAccessing to {self.URL}")
@@ -58,7 +74,14 @@ class SmartPlayBot:
         if max_window:
             self.driver.maximize_window()
 
-    def get_login_page(self, wait_time:int = 5, login_button_xpath:str = None):
+    def close_driver(self):
+        """
+        Close the driver
+        """
+        self.driver.quit()
+        print("\nDriver Closed ......")
+
+    def get_login_page(self, wait_time: int = 5, login_button_xpath: str = None):
 
         try:
             print("\nSearching Login Button ......")
@@ -69,23 +92,24 @@ class SmartPlayBot:
             LoginButtonElement = WebDriverWait(self.driver, wait_time).until(
                 EC.presence_of_element_located((By.XPATH, login_button_xpath))
             )
-            self.driver.execute_script("arguments[0].click();", LoginButtonElement)
+            self.driver.execute_script(
+                "arguments[0].click();", LoginButtonElement)
 
             print("Redirecting to Login page ......")
-        
+
         except TimeoutException:
             print(f"\nTimeout. Cannot find the XPATH: {login_button_xpath}")
 
     def login(self,
-              wait_time:int = 5,
-              username_xpath:str = None,
-              password_xpath:str = None,
-              login_button_xpath:str = None,
-              IamSmart_button_xpath:str = None):
+              wait_time: int = 5,
+              username_xpath: str = None,
+              password_xpath: str = None,
+              login_button_xpath: str = None,
+              IamSmart_button_xpath: str = None):
 
         print("\nLoad new tab webpage source")
 
-        ### Switch driver to new page
+        # Switch driver to new page
         WebDriverWait(self.driver, wait_time).until(
             EC.number_of_windows_to_be(2)
         )
@@ -97,47 +121,50 @@ class SmartPlayBot:
 
         self.LoginPage = self.driver.current_window_handle
         print(f"LoginPage: {self.LoginPage}")
-        
-        ### Use IamSmart Login -- Not support IamSmart Login Now
+
+        # Use IamSmart Login -- Not support IamSmart Login Now
         if username_xpath is None and password_xpath is None:
 
             print("\nLoading for iAM Smart Login")
 
             try:
-                ### Find & Click IamSmart Login Button
+                # Find & Click IamSmart Login Button
                 WebDriverWait(self.driver, wait_time).until(
-                    EC.presence_of_element_located((By.XPATH, IamSmart_button_xpath))
+                    EC.presence_of_element_located(
+                        (By.XPATH, IamSmart_button_xpath))
                 )
 
-                IamSmartButton = self.driver.find_element(By.XPATH, IamSmart_button_xpath)
-                self.driver.execute_script("arguments[0].click();", IamSmartButton)
+                IamSmartButton = self.driver.find_element(
+                    By.XPATH, IamSmart_button_xpath)
+                self.driver.execute_script(
+                    "arguments[0].click();", IamSmartButton)
 
             except NoSuchElementException:
-                print(f"Cannot find iAM Smart login button xpath: {IamSmart_button_xpath}")
+                print(f"Cannot find iAM Smart login button xpath: {
+                      IamSmart_button_xpath}")
 
-
-        ### Use username and password Login
+        # Use username and password Login
         if IamSmart_button_xpath is None:
 
             UsernameField = self.driver.find_element(By.XPATH, username_xpath)
-            UsernameField.send_keys("")
+            UsernameField.send_keys(self.username)
 
             PasswordField = self.driver.find_element(By.XPATH, password_xpath)
-            PasswordField.send_keys("")
+            PasswordField.send_keys(self.password)
 
-
-            WebDriverWait(self.driver, wait_time).until(
-                EC.presence_of_element_located((By.XPATH, login_button_xpath))
-            )
-
-            LoginButton = self.driver.find_element(By.XPATH, login_button_xpath)
+            LoginButton = self.driver.find_element(
+                By.XPATH, login_button_xpath)
             self.driver.execute_script("arguments[0].click();", LoginButton)
 
-    def search_available_period(self, wait_time:int = 5):
+    def search_available_period(self, wait_time: int = 5):
 
-        time.sleep(0.5)
+        # Wait for 團體付款 icon
+        WebDriverWait(self.driver, wait_time).until(
+            EC.visibility_of_element_located(
+                (By.XPATH, "//img[@data-v-174fb000]"))
+        )
 
-        ### Load Sport, date, district selection page
+        # Load Sport, date, district selection page
         FacultyXPATH = "//span[@data-v-49217096 and text()='設施']"
         WebDriverWait(self.driver, wait_time).until(
             EC.element_to_be_clickable((By.XPATH, FacultyXPATH))
@@ -145,15 +172,11 @@ class SmartPlayBot:
         FacultyButton = self.driver.find_element(By.XPATH, FacultyXPATH)
         self.driver.execute_script("arguments[0].click();", FacultyButton)
 
-        time.sleep(0.5)
-
-        ### Select Sport
+        # Select Sport
         InputBarXPATH = "//div[@data-v-429aaa46 and @data-v-012d0593 and @class='text']"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, InputBarXPATH))
         ).click()
-
-        time.sleep(0.5)
 
         TextAreaXPATH = "//input[@data-v-21e43f8c and @data-v-42c8b4a0]"
         TextArea = self.driver.find_element(By.XPATH, TextAreaXPATH)
@@ -164,42 +187,42 @@ class SmartPlayBot:
             EC.visibility_of_element_located((By.XPATH, PingPongXPATH))
         ).click()
 
-        time.sleep(0.5)
-
-        ### Select District
+        # Select District
         DistrictBarXPATH = "//div[@data-v-5528557e and @class='sp-select-value']"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, DistrictBarXPATH))
         ).click()
 
-        time.sleep(0.5)
+        # Wati for Select dropdown
+        DropDownXPATH = "//div[@data-v-5528557e and @class='sp-select-option' and not(contains(@style, 'display: none;'))]"
+        WebDriverWait(self.driver, wait_time).until(
+            EC.presence_of_element_located((By.XPATH, DropDownXPATH))
+        )
 
         DistrictXPATH = "//div[@class='programme-district-box' and .//div[text()='九龍']]"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, DistrictXPATH))
         ).click()
 
-        time.sleep(0.5)
-
-        ### Select Date
+        # Select Date
         DateInputXPATH = "//input[@type='text' and @class='el-input__inner']"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, DateInputXPATH))
         ).click()
 
-        DateXPATH = "//td[@class='available free-date' and .//span[normalize-space(text())='30']]"
+        DateXPATH = "//td[@class='available free-date' and .//span[normalize-space(text())='13']]"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, DateXPATH))
         ).click()
 
-        ### Search
+        # Search
         SearchButtonXPATH = "//div[@data-v-ff4d1da4 and @role='button' and text()='搜尋']"
         SearchButton = self.driver.find_element(By.XPATH, SearchButtonXPATH)
         self.driver.execute_script("arguments[0].click();", SearchButton)
 
-    def book(self, wait_time:int = 5):
+    def book(self, wait_time: int = 5):
 
-        ### Select Time Slot by District
+        # Select Time Slot by District
         TimeSlotXPATH = "//h3[@class='venuen-name' and contains(text(), '何文田體育館')]/ancestor::div[@class='el-row chooseTime commonFlex']//div[@data-v-196fdd38 and contains(text(), '乒乓球檯 (空調)(市區)')]/ancestor::div[@class='el-row']//div[@class='time flex' and text()='上午8時']"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, TimeSlotXPATH))
@@ -208,29 +231,32 @@ class SmartPlayBot:
         self.driver.execute_script("arguments[0].click();", TimeSlotButton)
         # self.driver.execute_script("arguments[0].innerText = arguments[1];", TimeSlotButton, "test")
 
-
-
-        ### Click confirm
+        # Click confirm
         ConfirmTimeXPATH = "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '繼續')]"
         WebDriverWait(self.driver, wait_time).until(
             EC.visibility_of_element_located((By.XPATH, ConfirmTimeXPATH))
         )
-        ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmTimeXPATH)
+        ConfirmTimeButton = self.driver.find_element(
+            By.XPATH, ConfirmTimeXPATH)
 
-        ### Scroll down & click confirm
-        prev_height = self.driver.execute_script("return document.body.scrollHeight")
+        # Scroll down & click confirm
+        prev_height = self.driver.execute_script(
+            "return document.body.scrollHeight")
         while True:
             # Scroll down to the bottom
             # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView();", ConfirmTimeButton)
 
             time.sleep(1)
-            
+
             # Calculate new height and compare with the previous height
-            new_height = self.driver.execute_script("return document.body.scrollHeight")
+            new_height = self.driver.execute_script(
+                "return document.body.scrollHeight")
 
             if new_height == prev_height:
-                self.driver.execute_script("arguments[0].click();", ConfirmTimeButton)
+                self.driver.execute_script(
+                    "arguments[0].click();", ConfirmTimeButton)
                 break  # Exit the loop if no new content is loaded
             prev_height = new_height
 
@@ -241,63 +267,71 @@ class SmartPlayBot:
         ClosePopButton = self.driver.find_element(By.XPATH, ClosePopupXPATH)
         self.driver.execute_script("arguments[0].click();", ClosePopButton)
 
-
-
         ConfirmToPayXPATH = "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '繼續')]"
-        ConfirmTimeButton = self.driver.find_element(By.XPATH, ConfirmToPayXPATH)
-        self.driver.execute_script("arguments[0].innerText = arguments[1];", ConfirmToPayXPATH, "test")
+        ConfirmTimeButton = self.driver.find_element(
+            By.XPATH, ConfirmToPayXPATH)
+        self.driver.execute_script(
+            "arguments[0].innerText = arguments[1];", ConfirmToPayXPATH, "test")
 
-        ### Scroll down & click confirm
-        prev_height = self.driver.execute_script("return document.body.scrollHeight")
+        # Scroll down & click confirm
+        prev_height = self.driver.execute_script(
+            "return document.body.scrollHeight")
         while True:
             # Scroll down to the bottom
             # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            self.driver.execute_script("arguments[0].scrollIntoView();", ConfirmTimeButton)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView();", ConfirmTimeButton)
 
             time.sleep(1)
-            
+
             # Calculate new height and compare with the previous height
-            new_height = self.driver.execute_script("return document.body.scrollHeight")
+            new_height = self.driver.execute_script(
+                "return document.body.scrollHeight")
 
             if new_height == prev_height:
-                self.driver.execute_script("arguments[0].click();", ConfirmTimeButton)
+                self.driver.execute_script(
+                    "arguments[0].click();", ConfirmTimeButton)
                 break  # Exit the loop if no new content is loaded
             prev_height = new_height
 
-
-        ## Click checkbox
+        # Click checkbox
         checkbox_1_XPATH = WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//*[@id='app']/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[1]/div/div[1]"))
+            EC.visibility_of_element_located(
+                (By.XPATH, "//*[@id='app']/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[1]/div/div[1]"))
         ).click()
 
-
         checkbox_2_XPATH = WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//*[@id='app']/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[2]/div/div[1]"))
+            EC.visibility_of_element_located(
+                (By.XPATH, "//*[@id='app']/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[2]/div/div[1]"))
         ).click()
 
         WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '確認並同意 ')]"))
+            EC.visibility_of_element_located(
+                (By.XPATH, "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '確認並同意 ')]"))
         ).click()
-
 
     def payment(self):
 
         WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '確認付款')]"))
+            EC.visibility_of_element_located(
+                (By.XPATH, "//div[@data-v-ff4d1da4 and @role='button' and contains(text(), '確認付款')]"))
         ).click()
 
         WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "/html/body/div/div[2]/div[1]/div/div/div/div[2]/div[7]/div[2]/img"))
+            EC.visibility_of_element_located(
+                (By.XPATH, "/html/body/div/div[2]/div[1]/div/div/div/div[2]/div[7]/div[2]/img"))
         ).click()
 
         WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "/html/body/div/div[2]/div[1]/div/div/div/div[4]/div[2]/div"))
+            EC.visibility_of_element_located(
+                (By.XPATH, "/html/body/div/div[2]/div[1]/div/div/div/div[4]/div[2]/div"))
         ).click()
 
         print(self.driver.current_url)
 
         WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "/html/body/app-root/app-payment-detail-form/div/div/div/div/div[1]/div[2]/form/div[1]/app-payment-method-card-layout/div[2]/app-payment-method-card/div/div/div/div[1]/div/label/span"))
+            EC.visibility_of_element_located(
+                (By.XPATH, "/html/body/app-root/app-payment-detail-form/div/div/div/div/div[1]/div[2]/form/div[1]/app-payment-method-card-layout/div[2]/app-payment-method-card/div/div/div/div[1]/div/label/span"))
         ).click()
 
         print(self.driver.current_url)
@@ -315,52 +349,56 @@ class SmartPlayBot:
         CardNumber.send_keys('903')
 
 
-
-
-
 if __name__ == "__main__":
-    URL = "https://www.smartplay.lcsd.gov.hk/website/tc/index.html"
+    try:
+        URL = "https://www.smartplay.lcsd.gov.hk/website/tc/index.html"
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-u", "--username", help="Username for login")
+        parser.add_argument("-pw", "--password", help="Password for login")
+        args = parser.parse_args()
 
-    ### Setup Driver
-    bot = SmartPlayBot(URL=URL)
+        dockerTesting = input("Are you testing in Docker? (Y/N): ")
+        # Setup Driver
+        bot = SmartPlayBot(
+            URL=URL,
+            usename=args.username,
+            password=args.password,
+            usingDocker=True if dockerTesting.lower() == "y" else False
+        )
 
-    SettingOptions = ["--disable-gpu",
-                      "--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"]
+        SettingOptions = ["--disable-gpu",
+                          "--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"]
 
-    bot.set_options(keep_alive=True, options_list=SettingOptions)
+        bot.set_options(keep_alive=True, options_list=SettingOptions)
+        bot.load_driver(max_window=True)
 
-    bot.load_driver(max_window=True)
+        # Load login page
+        LoginButtonXPATH = "//span[@class='btn__inner' and text()='登入']"
 
+        bot.get_login_page(login_button_xpath=LoginButtonXPATH)
 
-    ### Load login page
-    LoginButtonXPATH = "//span[@class='btn__inner' and text()='登入']"
+        # Login processing
 
-    bot.get_login_page(login_button_xpath=LoginButtonXPATH)
+        username_xpath = "//input[@name='pc-login-username']"
+        password_xpath = "//input[@name='pc-login-password']"
+        login_button_xpath = "//div[contains(text(), '登錄') or contains(text(), 'Login')]"
 
+        bot.login(username_xpath=username_xpath,
+                  password_xpath=password_xpath,
+                  login_button_xpath=login_button_xpath)
 
-    ### Login processing
-    # IamSmart_button_xpath = "//div[@class='smart']"
-    # bot.login(IamSmart_button_xpath=IamSmart_button_xpath)
+        # Search booking time slot
+        bot.search_available_period()
 
-    username_xpath = "//input[@name='pc-login-username']"
-    password_xpath = "//input[@name='pc-login-password']"
-    login_button_xpath = "//div[contains(text(), '登錄') or contains(text(), 'Login')]"
+        # Book
+        bot.book()
 
-    bot.login(username_xpath=username_xpath,
-              password_xpath=password_xpath,
-              login_button_xpath=login_button_xpath)
-
-    ### Search booking time slot
-    bot.search_available_period()
-
-
-    ### Book
-    bot.book()
-
-
-    bot.payment()
-
-
+        bot.payment()
+    except Exception as e:
+        traceback.print_exception(type(e), e, e.__traceback__)
+    finally:
+        bot.close_driver()
+        sys.exit(0)
 
 
 #################################################
