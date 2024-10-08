@@ -3,6 +3,15 @@
 from datetime import datetime
 import undetected_chromedriver as uc
 from booking import Booking
+import yaml
+
+
+def _load_yml(yml_path):
+
+    with open(yml_path, "r") as file:
+        booker_info = yaml.safe_load(file)
+
+    return booker_info
 
 
 def _IsValidTimeSlot(time_slot:str) -> bool:
@@ -39,7 +48,7 @@ def main(
     if options_list:
         for setting in options_list:
             options.add_argument(setting)
-    
+
     ### KeepAlive: Determine if the browser keep or not after run the script.
     driver = uc.Chrome(options=options,
                        enable_cdp_events=keep_alive)
@@ -51,6 +60,10 @@ def main(
     # date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='2024-10-13']"
     bot.select_date()
 
+    bot.select_time_slot(time_slot)
+
+    booker_info = _load_yml(r"C:\web_bot\Web_Bot\Hikiniku_To_Come_Bot\booker_info.yml")
+    bot.payment(booker_info)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
 
+import sys
 import time
 from datetime import date, timedelta
 
@@ -45,7 +46,7 @@ class Booking:
         print("\nSearching party size element ......")
 
         xpath = f"//select[@id='adult-picker']/option[@value='{party_size}']"
-        self._wait_located(xpath=xpath, _type="xpath")
+        self._wait_located(locater=xpath, _type="xpath")
 
         PartySizeSelection = self.driver.find_element(By.XPATH, xpath)
         PartySizeSelection.click()
@@ -53,25 +54,15 @@ class Booking:
         print("Party size selected ......")
 
 
-    def select_date(
-            self,
-            date_id:str = None,
-            calendar_id:str = None,
-            date_xpath:str = None
-    ) -> None:
+    def select_date(self) -> None:
         
-        if date_id is None:
-            date_id = "date-picker"
+        date_id = "date-picker"
+        calendar_id = "calendar-picker"
+        DateAfter7Days = date.today() + timedelta(days=7)
 
-        if calendar_id is None:
-            calendar_id = "calendar-picker"
-
-        if date_xpath is None:
-            DateAfter7Days = date.today() + timedelta(days=7)
-
-            print(f"\nSelected Date: {DateAfter7Days}\n")
-            
-            date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='{DateAfter7Days.strftime('%Y-%m-%d')}']"
+        print(f"\nSelected Date: {DateAfter7Days}\n")
+        
+        date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='{DateAfter7Days.strftime('%Y-%m-%d')}']"
 
         try:
             ### Expand the calendar & Unhide
@@ -88,28 +79,20 @@ class Booking:
             
             if is_disabled:
                 print("The date you selected is full !!!!!!!")
-                # self.driver.quit()
+                sys.exit(1)
             else:
                 CalendarDatePicker = self.driver.find_element(By.XPATH, date_xpath)
                 self.driver.execute_script("arguments[0].click()", CalendarDatePicker)
                 print("Date selected ......")
 
-        except:
-            print(Exception)
+        except Exception as e:
+            print(e)
 
 
-    def select_time_slot(
-        self,
-        timeslot_list:list,
-        timeslot_xpath_template:str = None,
-        booking_button_xpath:str = None,
-    ) -> None:
+    def select_time_slot(self, timeslot_list:list) -> None:
         
-        if timeslot_xpath_template is None:
-            timeslot_xpath_template = "//button[@data-cy='book-now-time-slot-box-###']"
-
-        if booking_button_xpath is None:
-            booking_button_xpath = "//div[@class='sc-gsnTZi gFJNgI']"
+        timeslot_xpath_template = "//button[@data-cy='book-now-time-slot-box-###']"
+        booking_button_xpath = "//div[@class='sc-gsnTZi gFJNgI']"
 
         print("\nTry to book selected the timeslot ......")
 
@@ -133,25 +116,45 @@ class Booking:
 
                 print("Clicked booking button ......")
 
-            except:
-                print(Exception)
+            except Exception as e:
+                print(e)
 
 
-    def payment(self,
-                modal_class_name:str = None,
-                modal_xpath:str = None,
-                confirm_button_xpath:str = None):
-        
-        if confirm_button_xpath is None:
-            confirm_button_xpath = "/html/body/div[4]/div/div/div/div[3]/button/span"
+    def payment(self, booker_info_dict:dict = {}, gender:str = "M"):
+
+        modal_xpath = "/html/body/div[4]/div/div/div/div[2]"
+        confirm_button_xpath = "/html/body/div[4]/div/div/div/div[3]/button/span"
+
+        surname_field_xpath = "//input[@id='familyName' and @data-cy='familyName']"
+        firstname_field_xpath = "//input[@id='givenName' and @data-cy='givenName']"
+
+        gender = booker_info_dict["gender"]
+        if gender == "M":
+            gender_xpath = "//input[@id='gender-male']"
+        elif gender == "F":
+            gender_xpath = "//input[@id='gender-female']"
+        else:
+            gender_xpath = "//input[@id='gender-none']"
+
+        phone_num_xpath = "//input[@id='phone' and @data-cy='phone']"
+        email_xpath = "//input[@id='email' and @data-cy='email']"
+        purpose_xpath = "/html/body/div[1]/div/div/form/section[1]/div[5]/div[1]/div[5]/span"
+
+        credit_card_xpath = "/html/body/div/form/span[2]/div/div/div[2]/span/input"
+        expired_date_xpath = "/html/body/div/form/span[2]/div/span/input"
+        cvc_code_xpath = "/html/body/div/form/span[2]/div/span/input"
+        owner_name_xpath = "/html/body/div[1]/div/div/form/section[2]/div[2]/div[4]/input"
+
+        deposit_agreement_xpath = "/html/body/div[1]/div/div/form/div[2]/div[1]/label"
+        confirm_booking_button_xpath = "/html/body/div[1]/div/div/form/div[2]/button[1]/div/span"
 
         print("\nClick agreement ......")
 
         ### Click argreement
-        self._wait_located("ReactModal__Content", _type="class")
+        self._wait_located(locater="ReactModal__Content", _type="class")
 
         ### Handle modal
-        modal_element = self.driver.find_element(By.XPATH, "/html/body/div[4]/div/div/div/div[2]")
+        modal_element = self.driver.find_element(By.XPATH, modal_xpath)
 
         print("\nScroll Down ......")
 
@@ -167,4 +170,22 @@ class Booking:
         self.driver.execute_script("arguments[0].click();", ConfirmButton)
 
         ### Input payment info
-        ...
+        time.sleep(2)
+
+        self.driver.find_element(By.XPATH, surname_field_xpath).send_keys(booker_info_dict["surname"])
+        self.driver.find_element(By.XPATH, firstname_field_xpath).send_keys(booker_info_dict["first_name"])
+        self.driver.find_element(By.XPATH, gender_xpath).click()
+
+        self.driver.find_element(By.XPATH, phone_num_xpath).send_keys(booker_info_dict["phone"])
+        self.driver.find_element(By.XPATH, email_xpath).send_keys(booker_info_dict["email"])
+        self.driver.find_element(By.XPATH, purpose_xpath).click()
+
+        self.driver.find_element(By.XPATH, credit_card_xpath).send_keys(booker_info_dict["credit_card_num"])
+        self.driver.find_element(By.XPATH, expired_date_xpath).send_keys(booker_info_dict["expired_date"])
+        self.driver.find_element(By.XPATH, cvc_code_xpath).send_keys(booker_info_dict["cvv"])
+
+        owner_name = booker_info_dict["surname"] + " " + booker_info_dict["first_name"]
+        self.driver.find_element(By.XPATH, owner_name_xpath).send_keys(owner_name)
+
+        self.driver.find_element(By.XPATH, deposit_agreement_xpath).click()
+        self.driver.find_element(By.XPATH, confirm_booking_button_xpath).click()
