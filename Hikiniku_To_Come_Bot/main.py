@@ -5,6 +5,14 @@ import undetected_chromedriver as uc
 from booking import Booking
 import yaml
 
+# surname: "Chan"
+# first_name: "Tai Man"
+# gender: M
+# phone: 60897654
+# email: "taimanchan@gmail.com"
+# credit_card_num: 4006161316299193
+# expired_date: 022028
+# cvv: 643
 
 def _load_yml(yml_path):
 
