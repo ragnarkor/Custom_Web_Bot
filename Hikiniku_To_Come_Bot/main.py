@@ -42,36 +42,51 @@ def main(
     assert 0 < party_size < 5, "Party Size exceed the range 1 - 4"
     assert _IsValidTimeSlot(time_slot), "Invalid time slot"
     
-    url = "https://inline.app/booking/-NxpjjSJhxwTw6cV0Lm3:inline-live-3/-Nxpjjmuxwpudr9s2kHN"
+    try:
+        url = "https://inline.app/booking/-NxpjjSJhxwTw6cV0Lm3:inline-live-3/-Nxpjjmuxwpudr9s2kHN"
 
-    options = uc.ChromeOptions()
-    if options_list:
-        for setting in options_list:
-            options.add_argument(setting)
+        options = uc.ChromeOptions()
+        if options_list:
+            for setting in options_list:
+                options.add_argument(setting)
 
-    ### KeepAlive: Determine if the browser keep or not after run the script.
-    driver = uc.Chrome(options=options,
-                       enable_cdp_events=keep_alive)
-    driver.get(url)
+        ### KeepAlive: Determine if the browser keep or not after run the script.
+        driver = uc.Chrome(options=options,
+                        enable_cdp_events=keep_alive)
+        driver.get(url)
 
-    bot = Booking(driver)
-    bot.select_partysize(party_size)
+        bot = Booking(driver)
+        bot.select_partysize(party_size)
 
-    # date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='2024-10-13']"
-    bot.select_date()
+        # date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='2024-10-13']"
+        bot.select_date()
 
-    bot.select_time_slot(time_slot)
+        bot.select_time_slot(time_slot)
 
-    booker_info = _load_yml(r"C:\web_bot\Web_Bot\Hikiniku_To_Come_Bot\booker_info.yml")
-    bot.payment(booker_info)
+        booker_info = _load_yml(r"C:\web_bot\Web_Bot\Hikiniku_To_Come_Bot\booker_info.yml")
+        bot.payment(booker_info)
+
+    except:
+        ...
+
+    finally:
+        page_source = driver.page_source
+        with open('page_source.html', 'w', encoding='utf-8') as f:
+            f.write(page_source)
+
+        driver.save_screenshot('screenshot.png')
 
 
 if __name__ == "__main__":
 
     PartySize = 1
-    TimeSlot = ["21-15"]
+    TimeSlot = ["15-00", "15-15"]
 
     options_list = ["--disable-gpu",
+                    "--headless",
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu"
                     "--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36"]
 
     main(options_list, True, PartySize, TimeSlot)

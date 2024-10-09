@@ -115,7 +115,7 @@ class Booking_Bot:
             CalendarID = "calendar-picker"
 
         if DateXPATH is None:
-            DateAfter7Days = date.today() + timedelta(days=7)
+            DateAfter7Days = date.today() + timedelta(days=3)
             print(DateAfter7Days)
             # DateAfter7Days = datetime(2024, 9, 23) + timedelta(days=7)
             DateXPATH = f"//div[@data-cy='bt-cal-day' and @data-date='{DateAfter7Days.strftime('%Y-%m-%d')}']"
@@ -232,7 +232,7 @@ if __name__ == "__main__":
 
     URL = "https://inline.app/booking/-NxpjjSJhxwTw6cV0Lm3:inline-live-3/-Nxpjjmuxwpudr9s2kHN"
     PartySize = 1
-    TimeSlot = ["21-15"]
+    TimeSlot = ["15-00"]
     # TimeSlot = ["17-00"]
 
     bot = Booking_Bot(URL=URL, PartySize=PartySize, TimeSlot=TimeSlot)

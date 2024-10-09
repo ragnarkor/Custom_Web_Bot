@@ -9,7 +9,7 @@ from selenium.webdriver import ActionChains
 
 import sys
 import time
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 
 class Booking:
 
@@ -58,7 +58,7 @@ class Booking:
         
         date_id = "date-picker"
         calendar_id = "calendar-picker"
-        DateAfter7Days = date.today() + timedelta(days=7)
+        DateAfter7Days = date.today() + timedelta(days=2)
 
         print(f"\nSelected Date: {DateAfter7Days}\n")
         
@@ -103,18 +103,24 @@ class Booking:
                 print(f"Try {time_slot} now")
 
                 ### Click Timeslot
-                self._wait_located(TimeslotXpath, _type="xpath")
+                self._wait_located(locater=TimeslotXpath, _type="xpath")
                 TimeslotSelection = self.driver.find_element(By.XPATH, TimeslotXpath)
                 self.driver.execute_script("arguments[0].click();", TimeslotSelection)
 
                 print(f"Selected time slot ({time_slot}) ......")
 
                 ### Click book button
-                self._wait_located(booking_button_xpath, _type="xpath")
+                self._wait_located(locater=booking_button_xpath, _type="xpath")
                 BookingButton = self.driver.find_element(By.XPATH, booking_button_xpath)
                 self.driver.execute_script("arguments[0].click();", BookingButton)
 
                 print("Clicked booking button ......")
+
+                has_alert = self.driver.execute_script("return (typeof window.alert === 'function');")
+                print("Alert detection using JavaScript: ", has_alert)
+                if has_alert:
+                    WebDriverWait(self.driver, 2).until(EC.alert_is_present())
+                    self.driver.switch_to.alert.accept()
 
             except Exception as e:
                 print(e)
@@ -122,7 +128,8 @@ class Booking:
 
     def payment(self, booker_info_dict:dict = {}, gender:str = "M"):
 
-        modal_xpath = "/html/body/div[4]/div/div/div/div[2]"
+        modal_name = "ReactModal__Content"
+        #modal_xpath = "/html/body/div[4]/div/div/div"
         confirm_button_xpath = "/html/body/div[4]/div/div/div/div[3]/button/span"
 
         surname_field_xpath = "//input[@id='familyName' and @data-cy='familyName']"
@@ -154,7 +161,7 @@ class Booking:
         self._wait_located(locater="ReactModal__Content", _type="class")
 
         ### Handle modal
-        modal_element = self.driver.find_element(By.XPATH, modal_xpath)
+        modal_element = self.driver.find_element(By.CLASS_NAME, modal_name)
 
         print("\nScroll Down ......")
 
@@ -165,7 +172,7 @@ class Booking:
         
         time.sleep(1)
 
-        self._wait_located(confirm_button_xpath, _type="xpath")
+        self._wait_located(locater=confirm_button_xpath, _type="xpath")
         ConfirmButton = self.driver.find_element(By.XPATH, confirm_button_xpath)
         self.driver.execute_script("arguments[0].click();", ConfirmButton)
 
@@ -187,5 +194,5 @@ class Booking:
         owner_name = booker_info_dict["surname"] + " " + booker_info_dict["first_name"]
         self.driver.find_element(By.XPATH, owner_name_xpath).send_keys(owner_name)
 
-        self.driver.find_element(By.XPATH, deposit_agreement_xpath).click()
-        self.driver.find_element(By.XPATH, confirm_booking_button_xpath).click()
+        # self.driver.find_element(By.XPATH, deposit_agreement_xpath).click()
+        # self.driver.find_element(By.XPATH, confirm_booking_button_xpath).click()
