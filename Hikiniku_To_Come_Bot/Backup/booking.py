@@ -16,9 +16,11 @@ from selenium.common.exceptions import UnexpectedAlertPresentException
 
 class Booking:
 
-    def __init__(self, driver) -> None:
+    def __init__(self, driver, booker_info) -> None:
 
         self.driver = driver
+        self.booker_info = booker_info
+
 
     def _wait_located(self,
                       wait_time = 5,
@@ -41,7 +43,7 @@ class Booking:
 
         except TimeoutException:
             raise TimeoutException(f"\nTimeout! Cannot find '{_type}': {locater}") from None
-        
+
 
     def select_partysize(self, party_size:int) -> None:
 
@@ -56,14 +58,15 @@ class Booking:
         print("Party size selected ......")
 
 
-    def select_date(self, selected_date) -> None:
+    def select_date(self) -> None:
         
         date_id = "date-picker"
         calendar_id = "calendar-picker"
+        DateAfter7Days = date.today() + timedelta(days=7)
 
-        print(f"\nSelected Date: {selected_date}\n")
+        print(f"\nSelected Date: {DateAfter7Days}\n")
         
-        date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='{selected_date.strftime('%Y-%m-%d')}']"
+        date_xpath = f"//div[@data-cy='bt-cal-day' and @data-date='{DateAfter7Days.strftime('%Y-%m-%d')}']"
 
         try:
             ### Expand the calendar & Unhide
@@ -90,37 +93,43 @@ class Booking:
             print(e)
 
 
-    def select_time_slot(self, timeslot:str) -> None:
+    def select_time_slot(self, timeslot_list:list) -> None:
         
         timeslot_xpath_template = "//button[@data-cy='book-now-time-slot-box-###']"
         booking_button_xpath = "/html/body/div[1]/div[1]/div/main/div[4]/div[2]/button/div/span/span"
 
         print("\nTry to book selected the timeslot ......")
 
-        timeslot = timeslot[:2] + "-" + timeslot[2:]
+        for time_slot in timeslot_list:
+            TimeslotXpath = timeslot_xpath_template.replace("###", time_slot)
 
-        TimeslotXpath = timeslot_xpath_template.replace("###", timeslot)
+            try:
+                print(f"Try {time_slot} now")
 
-        print(f"Try {timeslot} now")
+                ### Click Timeslot
+                self._wait_located(locater=TimeslotXpath, _type="xpath")
+                TimeslotSelection = self.driver.find_element(By.XPATH, TimeslotXpath)
+                self.driver.execute_script("arguments[0].click();", TimeslotSelection)
 
-        ### Click Timeslot
-        self._wait_located(locater=TimeslotXpath, _type="xpath")
-        TimeslotSelection = self.driver.find_element(By.XPATH, TimeslotXpath)
-        self.driver.execute_script("arguments[0].click();", TimeslotSelection)
+                print(f"Selected time slot ({time_slot}) ......")
 
-        print(f"Selected time slot ({timeslot}) ......")
+                ### Click book button
+                WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, booking_button_xpath))
+                )
+                # self._wait_located(locater=booking_button_xpath, _type="xpath")
+                BookingButton = self.driver.find_element(By.XPATH, booking_button_xpath)
+                self.driver.execute_script("arguments[0].click();", BookingButton)
 
-        ### Click book button
-        WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, booking_button_xpath))
-        )
-        # self._wait_located(locater=booking_button_xpath, _type="xpath")
-        BookingButton = self.driver.find_element(By.XPATH, booking_button_xpath)
-        self.driver.execute_script("arguments[0].click();", BookingButton)
+                print("Clicked booking button ......")
 
-        print("Clicked booking button ......")
+                self._modal_handler()
 
-        self._modal_handler()
+                self._payment(self.booker_info)
+
+            except UnexpectedAlertPresentException:
+                print("Handle Error ======================================================= ")
+                WebDriverWait(self.driver, 1).until(EC.alert_is_present()).accept
 
 
     def _modal_handler(self):
@@ -140,7 +149,7 @@ class Booking:
             .scroll_from_origin(scroll_origin, 0, 2000)\
             .perform()
         
-        WebDriverWait(self.driver, 5).until(
+        WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, confirm_button_xpath))
         )
         #self._wait_located(locater=confirm_button_xpath, _type="xpath")
@@ -149,7 +158,7 @@ class Booking:
         print("Clicked - I Have Read and Accepted")
 
 
-    def payment(self, booker_info_dict:dict = {}):
+    def _payment(self, booker_info_dict:dict = {}):
 
         surname_field_xpath = "//input[@id='familyName' and @data-cy='familyName']"
         firstname_field_xpath = "//input[@id='givenName' and @data-cy='givenName']"
