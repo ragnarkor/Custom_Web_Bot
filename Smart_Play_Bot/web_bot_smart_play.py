@@ -140,8 +140,7 @@ class SmartPlayBot:
                     "arguments[0].click();", IamSmartButton)
 
             except NoSuchElementException:
-                print(f"Cannot find iAM Smart login button xpath: {\
-                      IamSmart_button_xpath}")
+                print(f"Cannot find iAM Smart login button xpath: {IamSmart_button_xpath}")
 
         # Use username and password Login
         if IamSmart_button_xpath is None:
