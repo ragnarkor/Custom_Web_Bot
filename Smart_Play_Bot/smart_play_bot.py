@@ -23,7 +23,8 @@ def main(
 
     bot = BookingBot(driver)
     bot.get_login_page()
-    bot.login("123", "123")
+    bot.login("123", "1231")
+    bot.search_available_period()
 
 
 if __name__ == "__main__":

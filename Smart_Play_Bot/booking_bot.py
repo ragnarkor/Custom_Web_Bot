@@ -3,6 +3,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 
+from selenium.webdriver.common.action_chains import ActionChains
+import time
 class BookingBot:
     
     def __init__(self, driver):
@@ -36,6 +38,7 @@ class BookingBot:
 
         self.driver.maximize_window()
         
+        print("Loading to login page")
         self._wait_located(locater=login_button_xpath, _type="xpath")
         LoginButtonElement = self.driver.find_element(By.XPATH, login_button_xpath)
         self.driver.execute_script("arguments[0].click();", LoginButtonElement)
@@ -62,3 +65,24 @@ class BookingBot:
 
             LoginButtonElement = self.driver.find_element(By.XPATH, login_button_xpath)
             self.driver.execute_script("arguments[0].click();", LoginButtonElement)
+
+            print("Logged in")
+
+    def search_available_period(self):
+
+        facility_button_xpath = "/html/body/div/div[1]/div[1]/div/div[1]/div/div[1]/ul/li[2]/div"
+        sport_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div/div[1]/span"
+        input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div[2]/div[2]/div/div/div[1]/input"
+
+        time.sleep(1)
+        self._wait_located(locater=facility_button_xpath, _type="xpath")
+        FacilityButtonElement = self.driver.find_element(By.XPATH, facility_button_xpath)
+        self.driver.execute_script("arguments[0].click();", FacilityButtonElement)
+
+        self._wait_located(locater=sport_input_field_xpath, _type="xpath")
+        SportInputFieldElement = self.driver.find_element(By.XPATH, sport_input_field_xpath)
+        SportInputFieldElement.click()
+
+        self._wait_located(locater=input_field_xpath, _type="xpath")
+        InputFieldElement = self.driver.find_element(By.XPATH, input_field_xpath)
+        InputFieldElement.send_keys('乒乓球') ### Not test yet
