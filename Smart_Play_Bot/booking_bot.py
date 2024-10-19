@@ -71,18 +71,54 @@ class BookingBot:
     def search_available_period(self):
 
         facility_button_xpath = "/html/body/div/div[1]/div[1]/div/div[1]/div/div[1]/ul/li[2]/div"
-        sport_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div/div[1]/span"
-        input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div[2]/div[2]/div/div/div[1]/input"
 
+        sport_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div/div[1]"
+        input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div[2]/div[2]/div/div/div[1]/input"
+        sport_type_xpath = "//p[@data-v-21e43f8c and @data-v-42c8b4a0 and contains(text(),'乒乓球')]"
+
+        district_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[3]/div[1]/div/div[2]/div/div/div[1]/div"
+        district_xpath = "//div[@class='programme-district-box' and .//div[text()='九龍']]"
+
+        date_input_field_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[2]/div[2]/div/div[2]/div/input"
+        date_xpath = "//td[@class='available free-date' and .//span[normalize-space(text())='21']]"
+
+        ### Facility Home Page
         time.sleep(1)
         self._wait_located(locater=facility_button_xpath, _type="xpath")
         FacilityButtonElement = self.driver.find_element(By.XPATH, facility_button_xpath)
         self.driver.execute_script("arguments[0].click();", FacilityButtonElement)
 
+        ### Select Sport Type
+        time.sleep(1)
         self._wait_located(locater=sport_input_field_xpath, _type="xpath")
         SportInputFieldElement = self.driver.find_element(By.XPATH, sport_input_field_xpath)
         SportInputFieldElement.click()
 
         self._wait_located(locater=input_field_xpath, _type="xpath")
         InputFieldElement = self.driver.find_element(By.XPATH, input_field_xpath)
-        InputFieldElement.send_keys('乒乓球') ### Not test yet
+        InputFieldElement.send_keys('乒乓球')
+
+        self._wait_located(locater=sport_type_xpath, _type="xpath")
+        SportTypeElement = self.driver.find_element(By.XPATH, sport_type_xpath)
+        SportTypeElement.click()
+
+        ### Select District
+        time.sleep(1)
+        self._wait_located(locater=district_input_field_xpath, _type="xpath")
+        DistrictInputFieldElement = self.driver.find_element(By.XPATH, district_input_field_xpath)
+        DistrictInputFieldElement.click()
+
+        self._wait_located(locater=district_xpath, _type="xpath")
+        DistrictElement = self.driver.find_element(By.XPATH, district_xpath)
+        DistrictElement.click()
+
+
+        ### Select Date (not test yet)
+        time.sleep(1)
+        self._wait_located(locater=date_input_field_xpath, _type="xpath")
+        DateInputFieldElement = self.driver.find_element(By.XPATH, date_input_field_xpath)
+        DateInputFieldElement.click()
+
+        self._wait_located(locater=date_xpath, _type="xpath")
+        DateElement = self.driver.find_element(By.XPATH, date_xpath)
+        DateElement.click()
