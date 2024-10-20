@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+import re
 class BookingBot:
     
     def __init__(self, driver):
@@ -68,7 +69,7 @@ class BookingBot:
 
             print("Logged in")
 
-    def search_available_period(self):
+    def search_available_period(self, day):
 
         facility_button_xpath = "/html/body/div/div[1]/div[1]/div/div[1]/div/div[1]/ul/li[2]/div"
 
@@ -76,11 +77,13 @@ class BookingBot:
         input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div[2]/div[2]/div/div/div[1]/input"
         sport_type_xpath = "//p[@data-v-21e43f8c and @data-v-42c8b4a0 and contains(text(),'乒乓球')]"
 
-        district_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[3]/div[1]/div/div[2]/div/div/div[1]/div"
+        district_input_field_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[3]/div[2]"
         district_xpath = "//div[@class='programme-district-box' and .//div[text()='九龍']]"
 
-        date_input_field_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[2]/div[2]/div/div[2]/div/input"
-        date_xpath = "//td[@class='available free-date' and .//span[normalize-space(text())='21']]"
+        date_input_field_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[3]/div[2]"
+        date_xpath = f"//td[@class='available free-date' and .//span[normalize-space(text())={day}]]"
+
+        search_button_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[4]/div"
 
         ### Facility Home Page
         time.sleep(1)
@@ -110,15 +113,62 @@ class BookingBot:
 
         self._wait_located(locater=district_xpath, _type="xpath")
         DistrictElement = self.driver.find_element(By.XPATH, district_xpath)
-        DistrictElement.click()
+        #DistrictElement.click()
+        self.driver.execute_script("arguments[0].click();", DistrictElement)
 
-
-        ### Select Date (not test yet)
+        ### Select Date
         time.sleep(1)
         self._wait_located(locater=date_input_field_xpath, _type="xpath")
         DateInputFieldElement = self.driver.find_element(By.XPATH, date_input_field_xpath)
-        DateInputFieldElement.click()
+        self.driver.execute_script("arguments[0].click();", DateInputFieldElement)
 
         self._wait_located(locater=date_xpath, _type="xpath")
         DateElement = self.driver.find_element(By.XPATH, date_xpath)
-        DateElement.click()
+        self.driver.execute_script("arguments[0].click();", DateElement)
+
+        ### Select Search Button
+        SearchButtonElement = self.driver.find_element(By.XPATH, search_button_xpath)
+        self.driver.execute_script("arguments[0].click();", SearchButtonElement)
+
+
+        ### All Tested
+    def _classify_time(self, timeslot_str):
+
+        hour = int(re.search("\d", timeslot_str).group())
+
+        if "上午" in timeslot_str:
+            return "Morning"
+        
+        elif "下午" in timeslot_str:
+            if (1 <= hour < 6) or (hour == 12):
+                return "Afternoon"
+            elif 6 <= hour < 12:
+                return "Night"
+
+    def select_timeslot(self, timeslot_str, venuen_name):
+        morning_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[1]"
+        afternoon_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[2]"
+        night_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[3]"
+
+        time_type = self._classify_time(timeslot_str)
+
+        if time_type == "Morning":
+            time_type_xpath = morning_button_xpath
+        elif time_type == "Afternoon":
+            time_type_xpath = afternoon_button_xpath
+        elif time_type == "Night":
+            time_type_xpath = night_button_xpath
+
+        timeslot_xpath = f"//h3[@class='venuen-name' and contains(text(), '{venuen_name}')]/ancestor::div[@class='el-row chooseTime commonFlex']//div[@data-v-196fdd38 and contains(text(), '乒乓球檯 (空調)(市區)')]/ancestor::div[@class='el-row']//div[@class='time flex' and text()='{timeslot_str}']"
+
+        time.sleep(1)
+        self._wait_located(locater=time_type_xpath, _type="xpath")
+        TimeTypeElement = self.driver.find_element(By.XPATH, time_type_xpath)
+        TimeTypeElement.click()
+        print(f"Select {time_type}")
+
+        ### Not tested
+        time.sleep(1)
+        self._wait_located(locater=timeslot_xpath, _type="xpath")
+        TimeslotElement = self.driver.find_element(By.XPATH, timeslot_xpath)
+        self.driver.execute_script("arguments[0].click();", TimeslotElement)

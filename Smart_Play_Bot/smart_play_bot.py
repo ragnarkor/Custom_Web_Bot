@@ -3,11 +3,12 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from booking_bot import BookingBot
 
+
 def main(
     options_list:list = [],
     keep_alive:bool = False
 ):
-    
+
     url = "https://www.smartplay.lcsd.gov.hk/website/tc/index.html"
 
     options = Options()
@@ -23,8 +24,12 @@ def main(
 
     bot = BookingBot(driver)
     bot.get_login_page()
-    bot.login("123", "1231231231")
-    bot.search_available_period()
+    bot.login("1321312", "142984721973")
+    bot.search_available_period(23)
+
+    timeslot_str = "下午9時"
+    venue_name = "摩士公園體育館"
+    bot.select_timeslot(timeslot_str, venue_name)
 
 
 if __name__ == "__main__":
