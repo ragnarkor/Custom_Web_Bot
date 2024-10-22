@@ -6,6 +6,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 import time
 import re
+
+
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+
 class BookingBot:
     
     def __init__(self, driver):
@@ -50,12 +54,14 @@ class BookingBot:
         password = None            
     ):
 
-        username_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[1]/div/div[1]/input"
-        password_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[1]/div/div[2]/input"
-        login_button_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[1]/div/div[3]/div"
+        username_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[2]/div/div[1]/input"
+        password_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[2]/div/div[2]/input"
+        login_button_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[2]/div/div[3]/div"
 
         ### Switch driver to new page
         self.driver.switch_to.window(self.driver.window_handles[-1])
+
+        time.sleep(1)
 
         if username and password:
             UsernameField = self.driver.find_element(By.XPATH, username_xpath)
@@ -104,6 +110,7 @@ class BookingBot:
         self._wait_located(locater=sport_type_xpath, _type="xpath")
         SportTypeElement = self.driver.find_element(By.XPATH, sport_type_xpath)
         SportTypeElement.click()
+        print("Select Sport Type")
 
         ### Select District
         time.sleep(1)
@@ -115,6 +122,7 @@ class BookingBot:
         DistrictElement = self.driver.find_element(By.XPATH, district_xpath)
         #DistrictElement.click()
         self.driver.execute_script("arguments[0].click();", DistrictElement)
+        print("Select District")
 
         ### Select Date
         time.sleep(1)
@@ -125,10 +133,12 @@ class BookingBot:
         self._wait_located(locater=date_xpath, _type="xpath")
         DateElement = self.driver.find_element(By.XPATH, date_xpath)
         self.driver.execute_script("arguments[0].click();", DateElement)
+        print("Select Date")
 
         ### Select Search Button
         SearchButtonElement = self.driver.find_element(By.XPATH, search_button_xpath)
         self.driver.execute_script("arguments[0].click();", SearchButtonElement)
+        print("Click Search Button")
 
 
         ### All Tested
@@ -154,21 +164,24 @@ class BookingBot:
 
         if time_type == "Morning":
             time_type_xpath = morning_button_xpath
+            print(f"Click {time_type}")
         elif time_type == "Afternoon":
             time_type_xpath = afternoon_button_xpath
+            print(f"Click {time_type}")
         elif time_type == "Night":
             time_type_xpath = night_button_xpath
+            print(f"Click {time_type}")
 
-        timeslot_xpath = f"//h3[@class='venuen-name' and contains(text(), '{venuen_name}')]/ancestor::div[@class='el-row chooseTime commonFlex']//div[@data-v-196fdd38 and contains(text(), '乒乓球檯 (空調)(市區)')]/ancestor::div[@class='el-row']//div[@class='time flex' and text()='{timeslot_str}']"
-
-        time.sleep(1)
+        timeslot_xpath = f"//h3[text()='{venuen_name}']/ancestor::div[contains(@class, 'chooseTime')]//div[contains(text(), '乒乓球檯 (空調)(市區)')]/following-sibling::div//div[contains(text(), '{timeslot_str}')]"
+        
+        time.sleep(1.5)
         self._wait_located(locater=time_type_xpath, _type="xpath")
         TimeTypeElement = self.driver.find_element(By.XPATH, time_type_xpath)
         TimeTypeElement.click()
-        print(f"Select {time_type}")
 
-        ### Not tested
+
         time.sleep(1)
         self._wait_located(locater=timeslot_xpath, _type="xpath")
         TimeslotElement = self.driver.find_element(By.XPATH, timeslot_xpath)
+        print("@(#)*@(#*)@")
         self.driver.execute_script("arguments[0].click();", TimeslotElement)
