@@ -221,8 +221,6 @@ class SmartPlayBot:
 
     def book(self, wait_time: int = 5):
 
-        time.sleep(1)
-
         # Select Time Slot by District
         TimeSlotXPATH = "//h3[@class='venuen-name' and contains(text(), '何文田體育館')]/ancestor::div[@class='el-row chooseTime commonFlex']//div[@data-v-196fdd38 and contains(text(), '乒乓球檯 (空調)(市區)')]/ancestor::div[@class='el-row']//div[@class='time flex' and text()='上午8時']"
         WebDriverWait(self.driver, wait_time).until(
