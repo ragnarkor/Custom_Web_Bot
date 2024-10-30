@@ -24,10 +24,10 @@ def main(
 
     bot = BookingBot(driver)
     bot.get_login_page()
-    bot.login("dsadasda", "asdasdasdasd")
-    bot.search_available_period(28)
+    bot.login("13231321231", "123123123123")
+    bot.search_available_period(11, 5)
 
-    timeslot_str = "上午8時"
+    timeslot_str = "上午7時"
     venue_name = "竹園體育館"
     bot.select_timeslot(timeslot_str, venue_name)
 
