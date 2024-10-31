@@ -18,7 +18,7 @@ The **Smart_Play_Bot** is designed to automate interactions with the SmartPlay p
   - [Installation](#installation)
   - [Usage](#usage)
   
-- [Smart_Play_Bot](\Smart_Play_Bot\README.md)
+- [Smart_Play_Bot](/Smart_Play_Bot/README.md)
   - [Overview](\Smart_Play_Bot\README.md)
   - [Features](\Smart_Play_Bot\README.md)
   - [Installation](\Smart_Play_Bot\README.md)
