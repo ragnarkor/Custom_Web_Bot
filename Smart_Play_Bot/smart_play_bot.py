@@ -2,7 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from booking_bot import BookingBot
+import yaml
 
+def extract_config(path):
+
+    with open(path, "r", encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+
+    return config
 
 def main(
     options_list:list = [],
@@ -22,16 +29,30 @@ def main(
     driver = webdriver.Chrome(options=options)
     driver.get(url)
 
+    config = extract_config("config.yml")
+    username = config["username"]
+    password = config["password"]
+    booking_month = config["booking_month"]
+    booking_day = config["booking_day"]
+    timeslot = config["timeslot"]
+    venue = config["venue"]
+    cardholder = config["cardholder"]
+    card_num = config["card_num"]
+    expiry_month = config["expiry_month"]
+    expiry_year = config["expiry_year"]
+    security_code = config["security_code"]
+
+
     bot = BookingBot(driver)
     bot.get_login_page()
-    bot.login("13231321231", "123123123123")
-    bot.search_available_period(11, 5)
+    bot.login(username, password)
+    bot.search_available_period(booking_month, booking_day)
 
-    timeslot_str = "上午7時"
-    venue_name = "竹園體育館"
-    bot.select_timeslot(timeslot_str, venue_name)
 
-    bot.payment()
+    bot.select_timeslot(timeslot, venue)
+
+
+    bot.payment(cardholder, card_num, expiry_month, expiry_year, security_code)
 
 
 if __name__ == "__main__":
