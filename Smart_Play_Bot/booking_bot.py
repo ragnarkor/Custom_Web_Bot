@@ -363,6 +363,6 @@ class BookingBot:
         time.sleep(1)
         self._wait_located(locater=payment_button_xpath, _type="xpath")
         PaymentButtonElement = self.driver.find_element(By.XPATH, payment_button_xpath)
-        self.driver.execute_script("arguments[0].click();", PaymentButtonElement)
+        #self.driver.execute_script("arguments[0].click();", PaymentButtonElement)
 
         print("Click Payment Button")

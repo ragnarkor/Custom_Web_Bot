@@ -1,27 +1,15 @@
 # Auto Booking Web Bot for SmartPlay
 
-![Project Logo](path/to/logo.png)
+## Table of Contents
+- [Overview](#Overview)
+- [Installation](#installation)
+- [Usage](#usage)
+
 
 ## Overview
 
-Welcome to the **Auto Booking Web Bot for SmartPlay**! This powerful automation tool leverages Selenium to streamline the booking process on the SmartPlay platform, allowing users to secure their desired slots effortlessly and efficiently.
+**Auto Booking Web Bot for SmartPlay** is an automation tool leverages Selenium to streamline the booking process on the SmartPlay platform, allowing users to secure their desired slots effortlessly and efficiently.
 
-## Features
-
-- **Automated Booking**: Automatically navigate through the SmartPlay website to book your preferred slots.
-- **User-Friendly Interface**: Simple configuration options to set up your booking preferences.
-- **Multi-Browser Support**: Works seamlessly with Chrome, Firefox, and more.
-- **Customizable Settings**: Adjust parameters such as booking times, duration, and user credentials easily.
-- **Error Handling**: Robust error handling to manage unexpected issues during the booking process.
-
-## Table of Contents
-
-- [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ## Installation
 
@@ -29,38 +17,37 @@ To get started with the Auto Booking Web Bot, follow these steps:
 
 1. **Clone the Repository**:
     ```bash
-    git clone https://github.com/yourusername/auto-booking-web-bot.git
-    cd auto-booking-web-bot
+    git clone https://github.com/TimLL123456/Web_Bot.git
+    cd Web_Bot/Smart_Play_Bot
     ```
+
 2. **Install Dependencies**:
-Ensure you have Python installed, then run:
+
+    Ensure you have Python installed, then run:
     ```bash
     pip install -r requirements.txt
     ```
 
-3. **Set Up WebDriver**:
-Download the appropriate WebDriver for your browser (e.g., ChromeDriver for Chrome) and ensure it's in your system's PATH.
+3. **Set Up Configuration**:
+
+    The bot can be configured through a config.yaml file. Here’s an example configuration:
+    ```yaml
+    username: "12312312"
+    password: "12312312312"
+    booking_month: 11
+    booking_day: 10
+    timeslot: "上午7時"
+    venue: "竹園體育館"
+    cardholder: "Chan Tai Man"
+    card_num: "5419281455243022"
+    expiry_month: "07"
+    expiry_year: "23"
+    security_code: "000"
+    ```
+    Make sure to update the configuration file with your details before running the bot.
 
 ## Usage
 To run the bot, execute the following command in your terminal:
 ```bash
-python main.py
+python smart_play_bot.py
 ```
-
-## Example Command Line Arguments
-You can customize your booking by providing command line arguments:
-```bash
-python main.py --username your_username --password your_password --date "YYYY-MM-DD" --time "HH:MM"
-```
-
-## Configuration
-The bot can be configured through a config.yaml file. Here’s an example configuration:
-```text
-username: "your_username"
-password: "your_password"
-booking:
-  date: "YYYY-MM-DD"
-  time: "HH:MM"
-```
-
-Make sure to update the configuration file with your details before running the bot.
