@@ -56,7 +56,8 @@ class BookingBot:
 
         username_xpath = "//input[@class='el-input__inner' and @name='pc-login-username']"
         password_xpath = "//input[@type='password' and @name='pc-login-password']"
-        login_button_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[1]/div/div[3]/div"
+        # login_button_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[1]/div/div[3]/div"
+        login_button_xpath = "//div[@data-v-8c95f640='' and @role='button']"
 
         ### Switch driver to new page
         self.driver.switch_to.window(self.driver.window_handles[-1])
@@ -77,7 +78,13 @@ class BookingBot:
 
             print("Logged in")
 
-    def search_available_period(self, month:int, day:int):
+    def check_waiting_queue(self):
+        image_xpath = "//img[@src='/static/img/virtual-queue.gif' and @alt='smartplay']"
+
+        
+        pass
+
+    def search_available_period(self, month:int, day:int, district:str, sport:str):
         """ Redirect to timeslot selection page by given month, day """
 
         month, day = int(month), int(day)
@@ -86,10 +93,10 @@ class BookingBot:
 
         sport_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div/div[1]"
         input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div[2]/div[2]/div/div/div[1]/input"
-        sport_type_xpath = "//p[@data-v-21e43f8c and @data-v-42c8b4a0 and contains(text(),'乒乓球')]"
+        sport_type_xpath = f"//p[@data-v-21e43f8c and @data-v-42c8b4a0 and contains(text(),'{sport}')]"
 
         district_input_field_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[3]/div[2]"
-        district_xpath = "//div[@class='programme-district-box' and .//div[text()='九龍']]"
+        district_xpath = f"//div[@class='programme-district-box' and .//div[text()='{district}']]"
 
         date_input_field_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[3]/div[2]"
 

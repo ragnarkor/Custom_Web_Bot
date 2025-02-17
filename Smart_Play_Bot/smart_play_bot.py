@@ -29,9 +29,11 @@ def main(
     driver = webdriver.Chrome(options=options)
     driver.get(url)
 
-    config = extract_config("config.yml")
+    config = extract_config(r"C:\web_bot\Web_Bot\Smart_Play_Bot\config.yml")
     username = config["username"]
     password = config["password"]
+    district = config["district"]
+    sport = config["sport"]
     booking_month = config["booking_month"]
     booking_day = config["booking_day"]
     timeslot = config["timeslot"]
@@ -46,7 +48,7 @@ def main(
     bot = BookingBot(driver)
     bot.get_login_page()
     bot.login(username, password)
-    bot.search_available_period(booking_month, booking_day)
+    bot.search_available_period(booking_month, booking_day, district, sport)
 
 
     bot.select_timeslot(timeslot, venue)
