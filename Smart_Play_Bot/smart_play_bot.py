@@ -34,6 +34,7 @@ def main(
     password = config["password"]
     district = config["district"]
     sport = config["sport"]
+    sport_item = config["sport_item"]
     booking_month = config["booking_month"]
     booking_day = config["booking_day"]
     timeslot = config["timeslot"]
@@ -51,7 +52,7 @@ def main(
     bot.search_available_period(booking_month, booking_day, district, sport)
 
 
-    bot.select_timeslot(timeslot, venue)
+    bot.select_timeslot(timeslot, venue, sport_item)
 
 
     bot.payment(cardholder, card_num, expiry_month, expiry_year, security_code)

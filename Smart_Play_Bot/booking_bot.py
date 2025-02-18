@@ -128,7 +128,7 @@ class BookingBot:
 
         self._wait_located(locater=input_field_xpath, _type="xpath")
         InputFieldElement = self.driver.find_element(By.XPATH, input_field_xpath)
-        InputFieldElement.send_keys('乒乓球')
+        InputFieldElement.send_keys(sport)
 
         self._wait_located(locater=sport_type_xpath, _type="xpath")
         SportTypeElement = self.driver.find_element(By.XPATH, sport_type_xpath)
@@ -183,7 +183,7 @@ class BookingBot:
             elif 6 <= hour < 12:
                 return "Night"
 
-    def select_timeslot(self, timeslot_str:str, venuen_name:str):
+    def select_timeslot(self, timeslot_str:str, venuen_name:str, sport_item:str):
         """ Select the time and venuen """
 
         morning_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[1]"
@@ -214,7 +214,7 @@ class BookingBot:
             print(f"Click {time_type}")
 
 
-        timeslot_xpath = f"//h3[text()='{venuen_name}']/ancestor::div[contains(@class, 'chooseTime')]//div[contains(text(), '乒乓球檯 (空調)(市區)')]/following-sibling::div//div[contains(text(), '{timeslot_str}')]"
+        timeslot_xpath = f"//h3[text()='{venuen_name}']/ancestor::div[contains(@class, 'chooseTime')]//div[contains(text(), '{sport_item}')]/following-sibling::div//div[contains(text(), '{timeslot_str}')]"
         
         # Click Morning / Afternoon / Night
         time.sleep(2)
