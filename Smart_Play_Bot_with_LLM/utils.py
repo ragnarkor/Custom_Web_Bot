@@ -43,6 +43,10 @@ def fetch_district_hierarchy():
                 }
                 region_dict["subdistricts"].append(subdistrict_dict)
             
-            return api_response
+            api_response["districts"].append(region_dict)
+
+        return api_response
         
     return {"status": "error", "code": server_response.status_code}
+
+print(fetch_district_hierarchy())
