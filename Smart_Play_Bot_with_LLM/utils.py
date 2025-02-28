@@ -1,15 +1,16 @@
 import requests
 from datetime import datetime
 
-def fetch_district_hierarchy():
-    """Fetches and structures district hierarchy data from the smartplay API."""
-
+def fetch_district_info():
+    """Fetches and structures district hierarchy data from the LCSD API."""
+    
+    # Main response structure
     api_response = {
         "fetch_date": datetime.today().strftime("%Y-%m-%d"),
         "districts": []
     }
 
-    requests_headers = {
+    request_headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
         "Referer": "https://www.smartplay.lcsd.gov.hk/",
         "Accept": "application/json"
@@ -17,7 +18,7 @@ def fetch_district_hierarchy():
 
     districts_endpoint = "https://www.smartplay.lcsd.gov.hk/rest/param/api/v1/publ/districts/searching-criteria?pgm=N"
 
-    server_response = requests.get(districts_endpoint, headers=requests_headers)
+    server_response = requests.get(districts_endpoint, headers=request_headers)
     response_data = server_response.json().get("data", 0)
 
     if response_data:
@@ -42,11 +43,38 @@ def fetch_district_hierarchy():
                     "tc_name": subdistrict["tcName"].strip()
                 }
                 region_dict["subdistricts"].append(subdistrict_dict)
-            
+
             api_response["districts"].append(region_dict)
 
         return api_response
-        
+    
     return {"status": "error", "code": server_response.status_code}
 
-print(fetch_district_hierarchy())
+district_info = fetch_district_info()
+
+
+
+def fetch_available_venue_timeslot(district_codes, facility_code, play_date):
+    
+    base_url = "https://www.smartplay.lcsd.gov.hk/rest/facility-catalog/api/v1/publ/facilities"
+
+    params = {
+        "distCode": ",".join(district_codes),
+        "faCode": facility_code,
+        "playDate": play_date
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',
+        'Referer': 'https://www.smartplay.lcsd.gov.hk/facilities/search-result',
+        'channel': 'INTERNET'
+    }
+
+    response = requests.get(base_url, params=params, headers=headers)
+    return response.json()
+
+district_codes=['KC', 'KT', 'SSP', 'WTS', 'YTM']
+facility_code='TABT'
+play_date='2025-03-05'
+
+available_venue_timeslot = fetch_available_venue_timeslot(district_codes, facility_code, play_date)
