@@ -53,7 +53,6 @@ def fetch_district_info():
 district_info = fetch_district_info()
 
 
-
 def fetch_available_venue_timeslot(district_codes, facility_code, play_date):
     
     base_url = "https://www.smartplay.lcsd.gov.hk/rest/facility-catalog/api/v1/publ/facilities"
@@ -78,3 +77,39 @@ facility_code='TABT'
 play_date='2025-03-05'
 
 available_venue_timeslot = fetch_available_venue_timeslot(district_codes, facility_code, play_date)
+
+
+def process_available_venue_timeslot(available_venue_timeslot):
+    data = []
+
+    for period in [i for i in available_venue_timeslot["data"].keys() if i != "venueCountList"]:
+        # print(available_venue_timeslot["data"][period])
+
+        for district in available_venue_timeslot["data"][period]["distList"]:
+            # print(district["distCode"])
+
+            for venue in district["venueList"]:
+                # print(" ", venue["venueName"])
+                
+                for facility in venue["fatList"]:
+                    # print("  ", facility["fatName"])
+
+                    for session in facility["sessionList"]:
+                        # print("   ", session["ssnStartTime"], session["ssnEndTime"], session["available"])
+
+                        session_info = {"date": session["ssnStartDate"],
+                                        "period": period,
+                                        "district_code": district["distCode"],
+                                        "district_name": district["distName"],
+                                        "venue_id": venue["venueId"],
+                                        "venue_name": venue["venueName"],
+                                        "facility_name": facility["fatName"],
+                                        "session_start_time": session["ssnStartTime"],
+                                        "session_end_time": session["ssnEndTime"],
+                                        "session_available": session["available"]}
+                        
+                        data.append(session_info)
+                        # print(session_info)
+    return data
+
+data = process_available_venue_timeslot(available_venue_timeslot)
