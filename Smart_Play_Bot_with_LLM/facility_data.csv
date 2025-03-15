@@ -1,0 +1,76 @@
+﻿Category Code,Category Name (EN),Category Name (TC),Category Name (SC),Category Display,Category Sequence,Facility Code,Facility Name (EN),Facility Name (TC),Facility Name (SC),Display Flag,Non-Fee Flag,Sequence,Group Code
+ARCH,Archery,箭藝,箭艺,True,1,ARH,Archery,箭藝,箭艺,True,False,1,ARCH
+BAGM,Ball Games,球類運動,球类运动,True,2,AMPL,American Pool,美式桌球,美式桌球,True,False,1,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFBVOLC,Beach Volleyball (Non-fee),沙灘排球 (不收費),沙滩排球 (不收费),True,True,1,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,FHSP,FHSP,五人硬地足球,五人硬地足球,False,False,1,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,SPG,Sportsground,運動場,运动场,False,False,1,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BADC,Badminton,羽毛球,羽毛球,True,False,2,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BVOLC,BVOLC,沙灘排球場,沙滩排球场,False,False,2,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFRHOC,Roller Hockey (Non-fee),滾軸曲棍球 (不收費),滚轴曲棍球 (不收费),True,True,2,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,SHSP,SHSP,七人硬地足球,七人硬地足球,False,False,2,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFARH,Archery (Non-fee),箭藝 (不收費),箭艺 (不收费),True,True,3,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BBP,Baseball,棒球,棒球,True,False,3,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,DEC1,Dodgebee,躲避盤,躲避盘,True,False,3,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,RHOC,RHOC,滾軸曲棍球場,滚轴曲棍球场,False,False,3,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BASC,Basketball,籃球,篮球,True,False,4,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFFOTP,Football (Non-fee),足球 (不收費),足球 (不收费),True,True,4,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFBADC,Badminton (Non-fee),羽毛球 (不收費),羽毛球 (不收费),True,True,5,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BBC,Batting Cage,棒球練習場,棒球练习场,True,False,5,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,PBC,Outdoor Pickleball (Non-fee),戶外匹克球  (不收費),户外匹克球  (不收费),True,True,5,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFBASC,Basketball (Non-fee),籃球 (不收費),篮球 (不收费),True,True,6,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFBHBC,Beach Handball (Non-fee),沙灘手球 (不收費),沙滩手球 (不收费),True,True,7,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BHB,BHB,沙灘手球,沙滩手球,False,False,7,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BVOL,BVOL,沙灘排球,沙滩排球,False,False,8,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFCP,Cricket (Non-fee),板球 (不收費),板球 (不收费),True,True,8,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BILT,Billiard,英式桌球,英式桌球,True,False,9,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFGBC1,Gateball (Non-fee),門球 (不收費),门球 (不收费),True,True,9,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,CART,Carom Table,克朗桌球檯,克朗桌球台,True,False,10,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFHBC,Handball (Non-fee),手球 (不收費),手球 (不收费),True,True,10,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,CP,Cricket,板球,板球,True,False,11,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFNB,Netball (Non-fee),投球 (不收費),投球 (不收费),True,True,11,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,DBC,Dodgeball,閃避球,闪避球,False,False,12,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFTABT,Table Tennis (Non-fee),乒乓球 (不收費),乒乓球 (不收费),True,True,12,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,DBC1,Dodgeball,閃避球,闪避球,True,False,13,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFTENC,Tennis (Non-fee),網球 (不收費),网球 (不收费),True,True,13,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,FOTP,Football,足球,足球,True,False,14,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFVOLC,Volleyball (Non-fee),排球 (不收費),排球 (不收费),True,True,14,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,GBC1,Gateball,門球,门球,True,False,15,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFCLMW,Sport Climbing (Non-fee),運動攀登 (不收費),运动攀登 (不收费),True,True,15,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,GACT,GACT,門球場/匹克球場,门球场/匹克球场,False,False,16,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,GOLF,Golf,高爾夫球,高尔夫球,True,False,17,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,HBC,Handball,手球,手球,True,False,18,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,HOCP,Hockey,曲棍球,曲棍球,True,False,19,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,KINBC1,Kin-ball,健球,健球,True,False,20,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,KBC,Korfball,合球,合球,True,False,21,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,BGNR,Lawn Bowls,草地滾球,草地滚球,True,False,22,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NB,Netball,投球,投球,True,False,23,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,PBC1,Pickleball,匹克球,匹克球,True,False,24,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,RHC,RHC,滾軸曲棍球,滚轴曲棍球,False,False,25,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,RUGP,Rugby,美式足球,美式足球,True,False,26,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,SQUC,Squash,壁球,壁球,True,False,27,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,TABT,Table Tennis,乒乓球,乒乓球,True,False,28,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,TBC,Tchoukball,巧固球,巧固球,True,False,29,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,TENC,Tennis,網球,网球,True,False,30,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,TENP,Tennis Practice Court,網球練習場,网球练习场,False,False,31,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,VOLC,Volleyball,排球,排球,True,False,32,BAGM
+BAGM,Ball Games,球類運動,球类运动,True,2,NFBBP,Baseball (Non-fee),棒球 (不收費),棒球 (不收费),True,True,500,BAGM
+CAMP,Camps,營地,营地,False,3,HR,Horse Riding,騎馬活動,骑马活动,True,False,1,CAMP
+CBTS,Contact Sports,搏擊運動,搏击运动,True,4,STH,Sanshou,散手,散手,False,False,7,CBTS
+CYCL,Cycling,單車運動,单车运动,True,5,CYT,Track Cycling,場地單車,场地单车,True,False,1,CYCL
+DAAC,Dance and Activities,舞蹈與活動,舞蹈和活动,True,6,BR,Boxing Room,搏擊室,搏击室,False,False,1,DAAC
+DAAC,Dance and Activities,舞蹈與活動,舞蹈和活动,True,6,DNRM,Dance,舞蹈,舞蹈,True,False,2,DAAC
+DAAC,Dance and Activities,舞蹈與活動,舞蹈和活动,True,6,GTC,Gymnastic Training Centre,體操訓練中心,体操训练中心,False,False,4,DAAC
+DAAC,Dance and Activities,舞蹈與活動,舞蹈和活动,True,6,JR,Judo Room,柔道室,柔道室,False,False,5,DAAC
+DAAC,Dance and Activities,舞蹈與活動,舞蹈和活动,True,6,ATRM,Multi-purpose Activities,多用途活動,多用途活动,True,False,6,DAAC
+FITN,Fitness,健身,健身,True,7,FITF,Fitness,健身,健身,True,False,1,FITN
+FITN,Fitness,健身,健身,True,7,SP,Swimming Pool,泳池,泳池,False,False,2,FITN
+SCRC,Sport Climbing and rope course,運動攀登與繩網運動,运动攀登与绳网运动,True,8,ROPC,Rope Course Activities,繩網活動,绳网活动,True,False,1,SCRC
+SCRC,Sport Climbing and rope course,運動攀登與繩網運動,运动攀登与绳网运动,True,8,CLMW,Sport Climbing,運動攀登,运动攀登,True,False,2,SCRC
+WASP,Water sports,水上活動,水上活动,True,9,BATS,BATS,泳屋,泳屋,False,False,1,WASP
+WASP,Water sports,水上活動,水上活动,True,9,CANOE,Canoeing,獨木舟,独木舟,True,False,2,WASP
+WASP,Water sports,水上活動,水上活动,True,9,COLB,Color Boat,彩艇,彩艇,False,False,3,WASP
+WASP,Water sports,水上活動,水上活动,True,9,OTHER,Other crafts,其他艇類,其他艇类,False,False,4,WASP
+WASP,Water sports,水上活動,水上活动,True,9,PDB,Pedal Driven Boat,水上單車,水上单车,False,False,5,WASP
+WASP,Water sports,水上活動,水上活动,True,9,SAIL,Sailing,風帆,风帆,True,False,6,WASP
+WASP,Water sports,水上活動,水上活动,True,9,SAMP,Sampan,舢舨,舢舨,False,False,7,WASP
+WASP,Water sports,水上活動,水上活动,True,9,WINDSURF,Windsurfing,滑浪風帆,滑浪风帆,True,False,56,WASP
