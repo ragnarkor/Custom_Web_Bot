@@ -56,7 +56,6 @@ class BookingBot:
 
         username_xpath = "//input[@class='el-input__inner' and @name='pc-login-username']"
         password_xpath = "//input[@type='password' and @name='pc-login-password']"
-        # login_button_xpath = "/html/body/div/div[2]/div/div[1]/div[2]/div/div[1]/div/div[3]/div"
         login_button_xpath = "//div[@data-v-8c95f640='' and @role='button']"
 
         ### Switch driver to new page
@@ -89,7 +88,7 @@ class BookingBot:
 
         month, day = int(month), int(day)
 
-        facility_button_xpath = "/html/body/div/div[1]/div[1]/div/div[1]/div/div[1]/ul/li[2]/div"
+        facility_button_xpath = "/html/body/div/div[1]/div[1]/div/div[1]/div/div[1]/ul/div[1]/li[2]"
 
         sport_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div/div[1]"
         input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div[2]/div[2]/div/div/div[1]/input"
@@ -190,6 +189,44 @@ class BookingBot:
         afternoon_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[2]"
         night_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[3]"
 
+        time_type = self._classify_time(timeslot_str)
+
+        if time_type == "Morning":
+            time_type_xpath = morning_button_xpath
+            print(f"Click {time_type}")
+
+        elif time_type == "Afternoon":
+            time_type_xpath = afternoon_button_xpath
+            print(f"Click {time_type}")
+
+        elif time_type == "Night":
+            time_type_xpath = night_button_xpath
+            print(f"Click {time_type}")
+
+
+        timeslot_xpath = f"//h3[text()='{venuen_name}']/ancestor::div[contains(@class, 'chooseTime')]//div[contains(text(), '{sport_item}')]/following-sibling::div//div[contains(text(), '{timeslot_str}')]"
+        
+        # Click Morning / Afternoon / Night
+        time.sleep(2)
+        self._wait_located(locater=time_type_xpath, _type="xpath")
+        TimeTypeElement = self.driver.find_element(By.XPATH, time_type_xpath)
+        TimeTypeElement.click()
+
+        # Click timeslot
+        time.sleep(1)
+        self._wait_located(locater=timeslot_xpath, _type="xpath")
+        TimeslotElement = self.driver.find_element(By.XPATH, timeslot_xpath)
+        self.driver.execute_script("arguments[0].click();", TimeslotElement)
+        print(f"Click {timeslot_str}")
+
+
+    def check_timeslot_availability(self, timeslot_str:str, venuen_name:str, sport_item:str):
+        """ Select the time and venuen """
+
+        morning_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[1]"
+        afternoon_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[2]"
+        night_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[3]"
+
         continue_button_xpath = "//div[@data-v-8c95f640 and @class='xp-button xp-primary-d']//div[@tabindex='0' and @role='button']"
         cancel_button_xpath = "//div[@class='dialog-box' and @role='dialog']/div[@class='btn-box']/div[@class='cancel-button' and @role='button']"
         continue2_button_xpath = "/html/body/div/div[2]/div[4]/div/div/div/div[2]/div/div[2]/div[2]/div"
@@ -229,6 +266,57 @@ class BookingBot:
         self.driver.execute_script("arguments[0].click();", TimeslotElement)
         print(f"Click {timeslot_str}")
         
+
+        time.sleep(1)
+        self._wait_located(locater=continue_button_xpath, _type="xpath")
+        ContinueButtonElement = self.driver.find_element(By.XPATH, continue_button_xpath)
+        self.driver.execute_script("arguments[0].click();", ContinueButtonElement)
+
+        time.sleep(1)
+        self._wait_located(locater=cancel_button_xpath, _type="xpath")
+        CancelButtonElement = self.driver.find_element(By.XPATH, cancel_button_xpath)
+        self.driver.execute_script("arguments[0].click();", CancelButtonElement)
+
+        time.sleep(1)
+        self._wait_located(locater=continue2_button_xpath, _type="xpath")
+        Continue2ButtonElement = self.driver.find_element(By.XPATH, continue2_button_xpath)
+        self.driver.execute_script("arguments[0].click();", Continue2ButtonElement)
+
+        # Click checkbox
+        time.sleep(1)
+        self._wait_located(locater=checkbox1_xpath, _type="xpath")
+        Checkbox1Element = self.driver.find_element(By.XPATH, checkbox1_xpath)
+        Checkbox1Element.click()
+        
+        # Click checkbox
+        self._wait_located(locater=checkbox2_xpath, _type="xpath")
+        Checkbox2Element = self.driver.find_element(By.XPATH, checkbox2_xpath)
+        Checkbox2Element.click()
+
+        # Continue button
+        time.sleep(1)
+        self._wait_located(locater=confirm_button_xpath, _type="xpath")
+        ConfirmButtonElement = self.driver.find_element(By.XPATH, confirm_button_xpath)
+        self.driver.execute_script("arguments[0].click();", ConfirmButtonElement)
+
+        # Confirm payment
+        time.sleep(1)
+        self._wait_located(locater=confirm_payment_xpath, _type="xpath")
+        ConfirmPaymentButtonElement = self.driver.find_element(By.XPATH, confirm_payment_xpath)
+        self.driver.execute_script("arguments[0].click();", ConfirmPaymentButtonElement)
+        print("Confirmed")
+
+
+    def wait_for_booking(self):
+        """ Wait for booking """
+        continue_button_xpath = "//div[@data-v-8c95f640 and @class='xp-button xp-primary-d']//div[@tabindex='0' and @role='button']"
+        cancel_button_xpath = "//div[@class='dialog-box' and @role='dialog']/div[@class='btn-box']/div[@class='cancel-button' and @role='button']"
+        continue2_button_xpath = "/html/body/div/div[2]/div[4]/div/div/div/div[2]/div/div[2]/div[2]/div"
+
+        checkbox1_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[1]/div/div[1]/img"
+        checkbox2_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[2]/div/div[1]/img"
+        confirm_button_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[2]/div/div/div[1]/div[2]/div[2]/div"
+        confirm_payment_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[3]/div[2]/div"
 
         time.sleep(1)
         self._wait_located(locater=continue_button_xpath, _type="xpath")

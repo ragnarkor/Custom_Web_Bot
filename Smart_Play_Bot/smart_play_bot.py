@@ -51,8 +51,11 @@ def main(
     bot.login(username, password)
     bot.search_available_period(booking_month, booking_day, district, sport)
 
+    driver.get("https://www.smartplay.lcsd.gov.hk/facilities/search-result?district=KC&startDate=2025-08-18&typeCode=BASC&venueCode=&sportCode=BAGM&typeName=%E7%B1%83%E7%90%83&frmFilterType=&venueSportCode=&isFree=false")
 
     bot.select_timeslot(timeslot, venue, sport_item)
+    bot.check_timeslot_availability(timeslot, venue, sport_item)
+    bot.wait_for_booking()
 
 
     bot.payment(cardholder, card_num, expiry_month, expiry_year, security_code)
