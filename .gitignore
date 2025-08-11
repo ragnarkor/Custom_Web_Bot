@@ -5,3 +5,8 @@
 
 */booker_info.yml
 */config.yml
+
+# Virtual environment
+.venv/
+venv/
+
