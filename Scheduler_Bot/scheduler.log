@@ -1,0 +1,129 @@
+2025-08-12 11:41:19,107 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:41:19,107 - INFO - Past execution time window, exiting
+2025-08-12 11:41:19,120 - INFO - Killing browser process: Google Chrome (PID: 19538)
+2025-08-12 11:41:19,184 - INFO - Killing browser process: chrome_crashpad_handler (PID: 19540)
+2025-08-12 11:41:19,189 - INFO - Scheduler finished
+2025-08-12 11:41:51,505 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:41:51,505 - INFO - Time to run bot: 11:41:51
+2025-08-12 11:41:51,520 - INFO - Starting Smart Play Bot
+2025-08-12 11:41:51,521 - INFO - Bot process started with PID: 21113
+2025-08-12 11:42:07,104 - WARNING - Bot exited with code 0 but may not have completed payment
+2025-08-12 11:42:07,104 - INFO - STDOUT: 
+2025-08-12 11:42:07,104 - INFO - STDERR: 
+2025-08-12 11:42:07,104 - WARNING - Bot exited but may not have completed payment, will retry
+2025-08-12 11:42:12,109 - INFO - Time to run bot: 11:42:12
+2025-08-12 11:42:12,128 - INFO - Starting Smart Play Bot
+2025-08-12 11:42:12,129 - INFO - Bot process started with PID: 21228
+2025-08-12 11:42:19,588 - WARNING - Bot exited with code 0 but may not have completed payment
+2025-08-12 11:42:19,588 - INFO - STDOUT: 
+2025-08-12 11:42:19,588 - INFO - STDERR: 
+2025-08-12 11:42:19,588 - WARNING - Bot exited but may not have completed payment, will retry
+2025-08-12 11:42:22,135 - INFO - Received signal 2, shutting down gracefully
+2025-08-12 11:43:33,123 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:43:33,124 - INFO - Time to run bot: 11:43:33
+2025-08-12 11:43:33,139 - INFO - Starting Smart Play Bot
+2025-08-12 11:43:33,140 - INFO - Bot process started with PID: 22032
+2025-08-12 11:45:02,336 - INFO - Received signal 2, shutting down gracefully
+2025-08-12 11:46:59,182 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:46:59,182 - INFO - Time to run bot: 11:46:59
+2025-08-12 11:46:59,197 - INFO - Killing browser process: Google Chrome (PID: 22057)
+2025-08-12 11:46:59,266 - INFO - Killing browser process: chrome_crashpad_handler (PID: 22059)
+2025-08-12 11:46:59,268 - INFO - Killing browser process: Google Chrome (PID: 23303)
+2025-08-12 11:46:59,343 - INFO - Killing browser process: chrome_crashpad_handler (PID: 23305)
+2025-08-12 11:46:59,350 - INFO - Starting Smart Play Bot
+2025-08-12 11:46:59,355 - INFO - Bot process started with PID: 23648
+2025-08-12 11:47:01,507 - INFO - [BOT] Loading to login page
+2025-08-12 11:48:21,307 - INFO - Received signal 2, shutting down gracefully
+2025-08-12 11:48:25,905 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:48:25,905 - INFO - Time to run bot: 11:48:25
+2025-08-12 11:48:25,921 - INFO - Starting Smart Play Bot
+2025-08-12 11:48:25,922 - INFO - Bot process started with PID: 24207
+2025-08-12 11:48:27,992 - INFO - [BOT] Loading to login page
+2025-08-12 11:48:29,749 - INFO - [BOT] Logged in
+2025-08-12 11:48:33,488 - INFO - [BOT] Select Sport Type
+2025-08-12 11:48:34,530 - INFO - [BOT] Select District
+2025-08-12 11:48:35,570 - INFO - [BOT] Select Date
+2025-08-12 11:48:38,674 - INFO - [BOT] Click Search Button
+2025-08-12 11:48:38,779 - INFO - [BOT] Click Afternoon
+2025-08-12 11:48:38,885 - INFO - [BOT] Click 下午4時
+2025-08-12 11:48:44,744 - INFO - [BOT] Clear all selected elements
+2025-08-12 11:49:25,091 - INFO - Received signal 2, shutting down gracefully
+2025-08-12 11:49:28,955 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:49:28,955 - INFO - Time to run bot: 11:49:28
+2025-08-12 11:49:28,971 - INFO - Starting Smart Play Bot
+2025-08-12 11:49:28,972 - INFO - Bot process started with PID: 24582
+2025-08-12 11:49:31,352 - INFO - [BOT] Loading to login page
+2025-08-12 11:49:33,103 - INFO - [BOT] Logged in
+2025-08-12 11:49:36,747 - INFO - [BOT] Select Sport Type
+2025-08-12 11:49:37,785 - INFO - [BOT] Select District
+2025-08-12 11:49:38,822 - INFO - [BOT] Select Date
+2025-08-12 11:49:40,906 - WARNING - Bot exited with code 0 but may not have completed payment
+2025-08-12 11:49:40,906 - INFO - STDOUT: Loading to login page
+Logged in
+Select Sport Type
+Select District
+Select Date
+local variable 'time_type_xpath' referenced before assignment
+
+2025-08-12 11:49:40,907 - INFO - STDERR: 
+2025-08-12 11:49:40,907 - WARNING - Bot exited but may not have completed payment, will retry
+2025-08-12 11:49:45,912 - INFO - Time to run bot: 11:49:45
+2025-08-12 11:49:45,920 - INFO - Killing browser process: Google Chrome (PID: 24605)
+2025-08-12 11:49:45,979 - INFO - Killing browser process: chrome_crashpad_handler (PID: 24607)
+2025-08-12 11:49:45,985 - INFO - Starting Smart Play Bot
+2025-08-12 11:49:45,987 - INFO - Bot process started with PID: 24685
+2025-08-12 11:49:48,166 - INFO - [BOT] Loading to login page
+2025-08-12 11:49:49,912 - INFO - [BOT] Logged in
+2025-08-12 11:49:53,530 - INFO - [BOT] Select Sport Type
+2025-08-12 11:49:54,572 - INFO - [BOT] Select District
+2025-08-12 11:49:55,614 - INFO - [BOT] Select Date
+2025-08-12 11:49:55,720 - INFO - [BOT] Click Search Button
+2025-08-12 11:49:57,679 - INFO - [BOT] local variable 'time_type_xpath' referenced before assignment
+2025-08-12 11:49:57,785 - WARNING - Bot exited with code 0 but may not have completed payment
+2025-08-12 11:49:57,785 - INFO - STDOUT: Loading to login page
+Logged in
+Select Sport Type
+Select District
+Select Date
+Click Search Button
+local variable 'time_type_xpath' referenced before assignment
+
+2025-08-12 11:49:57,785 - INFO - STDERR: 
+2025-08-12 11:49:57,785 - WARNING - Bot exited but may not have completed payment, will retry
+2025-08-12 11:49:59,213 - INFO - Received signal 2, shutting down gracefully
+2025-08-12 11:50:04,192 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:50:04,192 - INFO - Past execution time window, exiting
+2025-08-12 11:50:04,208 - INFO - Scheduler finished
+2025-08-12 11:50:11,128 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:50:11,128 - INFO - Past execution time window, exiting
+2025-08-12 11:50:11,143 - INFO - Scheduler finished
+2025-08-12 11:50:39,268 - INFO - Smart Play Bot Scheduler started
+2025-08-12 11:50:39,268 - INFO - Time to run bot: 11:50:39
+2025-08-12 11:50:39,284 - INFO - Starting Smart Play Bot
+2025-08-12 11:50:39,285 - INFO - Bot process started with PID: 25290
+2025-08-12 11:50:41,352 - INFO - [BOT] Loading to login page
+2025-08-12 11:50:43,111 - INFO - [BOT] Logged in
+2025-08-12 11:50:46,751 - INFO - [BOT] Select Sport Type
+2025-08-12 11:50:47,793 - INFO - [BOT] Select District
+2025-08-12 11:50:48,942 - INFO - [BOT] Select Date
+2025-08-12 11:50:52,059 - INFO - [BOT] Click Search Button
+2025-08-12 11:50:52,164 - INFO - [BOT] Click Morning
+2025-08-12 11:50:52,269 - INFO - [BOT] Click 上午9時
+2025-08-12 11:50:53,094 - INFO - [BOT] Found 1 session-tag-box-select elements
+2025-08-12 11:50:54,136 - INFO - [BOT] Clicked element 1
+2025-08-12 11:50:54,242 - INFO - [BOT] Available group: ['上午9時']
+2025-08-12 11:51:00,301 - INFO - [BOT] Available timeslots found, proceeding to booking
+2025-08-12 11:51:00,406 - INFO - [BOT] Confirmed
+2025-08-12 11:51:01,347 - INFO - [BOT] Starting payment process...
+2025-08-12 11:51:01,451 - INFO - [BOT] Select Mastercard
+2025-08-12 11:51:13,429 - INFO - [BOT] input credit card info
+2025-08-12 11:51:13,535 - INFO - [BOT] Input cardholder
+2025-08-12 11:51:13,640 - INFO - [BOT] Input card number
+2025-08-12 11:51:13,743 - INFO - [BOT] Input expiry month
+2025-08-12 11:51:13,845 - INFO - [BOT] Input expiry year
+2025-08-12 11:51:14,787 - INFO - [BOT] Input security code
+2025-08-12 11:51:14,892 - INFO - Bot completed successfully with payment
+2025-08-12 11:51:14,892 - INFO - Bot completed successfully with payment. Scheduler finished.
+2025-08-12 11:51:14,907 - INFO - Killing browser process: Google Chrome (PID: 25313)
+2025-08-12 11:51:15,013 - INFO - Killing browser process: chrome_crashpad_handler (PID: 25315)
+2025-08-12 11:51:15,018 - INFO - Scheduler finished
