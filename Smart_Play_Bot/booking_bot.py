@@ -220,91 +220,82 @@ class BookingBot:
         print(f"Click {timeslot_str}")
 
 
-    def check_timeslot_availability(self, timeslot_str:str, venuen_name:str, sport_item:str):
-        """ Select the time and venuen """
-
-        morning_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[1]"
-        afternoon_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[2]"
-        night_button_xpath = "/html/body/div[1]/div[2]/div[4]/div[2]/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div[1]/div[3]"
-
-        continue_button_xpath = "//div[@data-v-8c95f640 and @class='xp-button xp-primary-d']//div[@tabindex='0' and @role='button']"
-        cancel_button_xpath = "//div[@class='dialog-box' and @role='dialog']/div[@class='btn-box']/div[@class='cancel-button' and @role='button']"
-        continue2_button_xpath = "/html/body/div/div[2]/div[4]/div/div/div/div[2]/div/div[2]/div[2]/div"
-
-        checkbox1_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[1]/div/div[1]/img"
-        checkbox2_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[2]/div/div[1]/img"
-        confirm_button_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[2]/div/div/div[1]/div[2]/div[2]/div"
-        confirm_payment_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[3]/div[2]/div"
-
-        time_type = self._classify_time(timeslot_str)
-
-        if time_type == "Morning":
-            time_type_xpath = morning_button_xpath
-            print(f"Click {time_type}")
-
-        elif time_type == "Afternoon":
-            time_type_xpath = afternoon_button_xpath
-            print(f"Click {time_type}")
-
-        elif time_type == "Night":
-            time_type_xpath = night_button_xpath
-            print(f"Click {time_type}")
-
-
-        timeslot_xpath = f"//h3[text()='{venuen_name}']/ancestor::div[contains(@class, 'chooseTime')]//div[contains(text(), '{sport_item}')]/following-sibling::div//div[contains(text(), '{timeslot_str}')]"
+    def _clear_selected_sessions(self):
+        """ Clear selected session states """
+        time.sleep(1)
         
-        # Click Morning / Afternoon / Night
-        time.sleep(2)
-        self._wait_located(locater=time_type_xpath, _type="xpath")
-        TimeTypeElement = self.driver.find_element(By.XPATH, time_type_xpath)
-        TimeTypeElement.click()
-
-        # Click timeslot
-        time.sleep(1)
-        self._wait_located(locater=timeslot_xpath, _type="xpath")
-        TimeslotElement = self.driver.find_element(By.XPATH, timeslot_xpath)
-        self.driver.execute_script("arguments[0].click();", TimeslotElement)
-        print(f"Click {timeslot_str}")
+        # Find elements with session-tag-box-select class
+        session_elements_xpath = "//div[contains(@class, 'session-tag-box-select')]"
         
-
-        time.sleep(1)
-        self._wait_located(locater=continue_button_xpath, _type="xpath")
-        ContinueButtonElement = self.driver.find_element(By.XPATH, continue_button_xpath)
-        self.driver.execute_script("arguments[0].click();", ContinueButtonElement)
-
-        time.sleep(1)
-        self._wait_located(locater=cancel_button_xpath, _type="xpath")
-        CancelButtonElement = self.driver.find_element(By.XPATH, cancel_button_xpath)
-        self.driver.execute_script("arguments[0].click();", CancelButtonElement)
-
-        time.sleep(1)
-        self._wait_located(locater=continue2_button_xpath, _type="xpath")
-        Continue2ButtonElement = self.driver.find_element(By.XPATH, continue2_button_xpath)
-        self.driver.execute_script("arguments[0].click();", Continue2ButtonElement)
-
-        # Click checkbox
-        time.sleep(1)
-        self._wait_located(locater=checkbox1_xpath, _type="xpath")
-        Checkbox1Element = self.driver.find_element(By.XPATH, checkbox1_xpath)
-        Checkbox1Element.click()
+        try:
+            self._wait_located(locater=session_elements_xpath, _type="xpath")
+        except:
+            print("Clear all selected elements")
+            return
         
-        # Click checkbox
-        self._wait_located(locater=checkbox2_xpath, _type="xpath")
-        Checkbox2Element = self.driver.find_element(By.XPATH, checkbox2_xpath)
-        Checkbox2Element.click()
+        # Get all matching elements
+        session_elements = self.driver.find_elements(By.XPATH, session_elements_xpath)
+        
+        if session_elements:
+            print(f"Found {len(session_elements)} session-tag-box-select elements")
+            
+            # Click each element
+            for i, element in enumerate(session_elements):
+                self.driver.execute_script("arguments[0].click();", element)
+                print(f"Clicked element {i+1}")
+                time.sleep(0.5)
+        else:
+            print("Clear all selected elements")
+            return
 
-        # Continue button
-        time.sleep(1)
-        self._wait_located(locater=confirm_button_xpath, _type="xpath")
-        ConfirmButtonElement = self.driver.find_element(By.XPATH, confirm_button_xpath)
-        self.driver.execute_script("arguments[0].click();", ConfirmButtonElement)
 
-        # Confirm payment
-        time.sleep(1)
-        self._wait_located(locater=confirm_payment_xpath, _type="xpath")
-        ConfirmPaymentButtonElement = self.driver.find_element(By.XPATH, confirm_payment_xpath)
-        self.driver.execute_script("arguments[0].click();", ConfirmPaymentButtonElement)
-        print("Confirmed")
+    def check_timeslot_availability(self, timeslot_list:list):
+        """ Check the timeslot availability """
+
+        self._clear_selected_sessions()
+
+        i = 0
+        while i < len(timeslot_list):
+            current_timeslot_group = timeslot_list[i]
+            
+            # Check availability of all timeslots in current group
+            all_available = True
+            time_elements = []
+            
+            for timeslot in current_timeslot_group:
+                # Find time element with class="time" starting with current timeslot
+                time_xpath = f"//div[@class='time' and starts-with(text(), '{timeslot}')]"
+                
+                time_element = self.driver.find_element(By.XPATH, time_xpath)
+                time_elements.append(time_element)
+                
+                # Check if sibling element has session-tag-box-disabled class
+                sibling_xpath = f"{time_xpath}/following-sibling::*[1]"
+                sibling_element = self.driver.find_element(By.XPATH, sibling_xpath)
+                
+                if "session-tag-box-disabled" in sibling_element.get_attribute("class"):
+                    all_available = False
+                    break
+            
+            # If all timeslots available, click their sibling elements and exit
+            if all_available and time_elements:
+                
+                for j, time_element in enumerate(time_elements):
+                    # Find sibling element (target button)
+                    sibling_xpath = f"//div[@class='time' and starts-with(text(), '{current_timeslot_group[j]}')]/following-sibling::*[1]"
+                    sibling_element = self.driver.find_element(By.XPATH, sibling_xpath)
+                    self.driver.execute_script("arguments[0].click();", sibling_element)
+                    time.sleep(0.5)
+                
+                print(f"Available group: {current_timeslot_group}")
+                break
+            else:
+                i += 1
+        
+        if i >= len(timeslot_list):
+            return False
+        
+        return True
 
 
     def wait_for_booking(self):

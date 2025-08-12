@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from booking_bot import BookingBot
 import yaml
+import time
 
 def extract_config(path):
 
@@ -29,7 +30,7 @@ def main(
     driver = webdriver.Chrome(options=options)
     driver.get(url)
 
-    config = extract_config(r"C:\web_bot\Web_Bot\Smart_Play_Bot\config.yml")
+    config = extract_config("config.yml")
     username = config["username"]
     password = config["password"]
     district = config["district"]
@@ -38,6 +39,7 @@ def main(
     booking_month = config["booking_month"]
     booking_day = config["booking_day"]
     timeslot = config["timeslot"]
+    timeslot_list = config["timeslot_list"]
     venue = config["venue"]
     cardholder = config["cardholder"]
     card_num = config["card_num"]
@@ -51,14 +53,27 @@ def main(
     bot.login(username, password)
     bot.search_available_period(booking_month, booking_day, district, sport)
 
-    driver.get("https://www.smartplay.lcsd.gov.hk/facilities/search-result?district=KC&startDate=2025-08-18&typeCode=BASC&venueCode=&sportCode=BAGM&typeName=%E7%B1%83%E7%90%83&frmFilterType=&venueSportCode=&isFree=false")
+    # driver.get("https://www.smartplay.lcsd.gov.hk/facilities/search-result?district=KC&startDate=2025-08-18&typeCode=BASC&venueCode=&sportCode=BAGM&typeName=%E7%B1%83%E7%90%83&frmFilterType=&venueSportCode=&isFree=false")
 
     bot.select_timeslot(timeslot, venue, sport_item)
-    bot.check_timeslot_availability(timeslot, venue, sport_item)
+    
+    # Poll for available timeslots
+    while True:
+        if bot.check_timeslot_availability(timeslot_list):
+            print("Available timeslots found, proceeding to booking")
+            break
+        else:
+            print("No available timeslots, waiting 1 minute and refreshing...")
+            time.sleep(60)
+            driver.refresh()
+            time.sleep(2)  # Wait for page to load
+    
     bot.wait_for_booking()
 
 
+    print("Starting payment process...")
     bot.payment(cardholder, card_num, expiry_month, expiry_year, security_code)
+    print("Payment process completed successfully!")
 
 
 if __name__ == "__main__":
