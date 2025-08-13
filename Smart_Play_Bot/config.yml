@@ -1,0 +1,21 @@
+username: username
+password: password
+sport: 籃球
+booking_month: '8'
+booking_day: '20'
+district: 九龍城區
+sport_item: 籃球場 (空調)(市區)
+venue: 土瓜灣體育館
+timeslot: 下午8時
+timeslot_list:
+- - 下午8時
+  - 下午9時
+- - 下午9時
+  - 下午10時
+cardholder: Chan Tai Man
+card_num: '5419281455243022'
+expiry_month: '07'
+expiry_year: '23'
+security_code: '000'
+pps_card_num: ''
+pps_card_pwd: ''
