@@ -1,5 +1,5 @@
-username: 00111426038
-password: Jess6033@
+username: username
+password: password
 sport: 籃球
 booking_month: '8'
 booking_day: '20'
@@ -17,5 +17,5 @@ card_num: '5419281455243022'
 expiry_month: '07'
 expiry_year: '23'
 security_code: '000'
-pps_card_num: '46059614'
+pps_card_num: ''
 pps_card_pwd: ''
