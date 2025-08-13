@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Smart Play Bot Scheduler
-Executes smart_play_bot.py between 11:20 AM and 11:40 AM with process monitoring
+Executes smart_play_bot.py within a configurable daily time window with process monitoring
+Automatically updates config.yml dates to current date + 6 days
 """
 
 import os
@@ -11,7 +12,8 @@ import signal
 import subprocess
 import psutil
 import logging
-from datetime import datetime, time as dt_time
+import yaml
+from datetime import datetime, time as dt_time, timedelta
 from pathlib import Path
 
 # Setup logging
@@ -31,13 +33,88 @@ class BotScheduler:
         self.start_time = None
         self.max_runtime = 15 * 60  # 15 minutes in seconds
         self.bot_dir = "../Smart_Play_Bot"
+        # Execution window configuration (single source of truth)
+        # Update these two values to change the allowed run window
+        self.window_start_time = dt_time(0, 0)  # start of window (HH:MM)
+        self.window_end_time = dt_time(9, 0)     # end of window (HH:MM)
         
+    def update_config_dates(self):
+        """Update config.yml dates to current date + 6 days"""
+        try:
+            config_file = Path(self.bot_dir) / "config.yml"
+            if not config_file.exists():
+                logger.error(f"Config file not found: {config_file}")
+                return False
+            
+            # Calculate target date (current date + 6 days)
+            today = datetime.now()
+            target_date = today + timedelta(days=6)
+            target_month = str(target_date.month)
+            target_day = str(target_date.day)
+            
+            logger.info(f"Current date: {today.strftime('%Y-%m-%d')}")
+            logger.info(f"Target date (+6 days): {target_date.strftime('%Y-%m-%d')}")
+            logger.info(f"Month: {target_month}, Day: {target_day}")
+            
+            # Read existing config
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+            
+            # Update dates
+            config['booking_month'] = target_month
+            config['booking_day'] = target_day
+            
+            # Write back to file
+            with open(config_file, 'w', encoding='utf-8') as f:
+                yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+            
+            logger.info(f"Successfully updated config: booking_month = {target_month}, booking_day = {target_day}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to update config dates: {e}")
+            return False
+    
     def is_time_to_run(self):
-        """Check if current time is between 11:20 AM and 11:40 AM"""
+        """Check if current time is within configured execution window."""
         now = datetime.now().time()
-        start_time = dt_time(11, 20)  # 11:20 AM
-        end_time = dt_time(11, 55)    # 11:40 AM
-        return start_time <= now <= end_time
+        return self.window_start_time <= now <= self.window_end_time
+    
+    def wait_until_execution_time(self):
+        """Wait until the configured execution window starts."""
+        now = datetime.now()
+        today_start = datetime.combine(now.date(), self.window_start_time)
+        today_end = datetime.combine(now.date(), self.window_end_time)
+
+        if now < today_start:
+            target_datetime = today_start
+        elif now <= today_end:
+            # Already inside the window; no waiting needed
+            logger.info(
+                f"Execution time window already active "
+                f"({self.window_start_time.strftime('%H:%M')} - {self.window_end_time.strftime('%H:%M')}). Proceeding."
+            )
+            return
+        else:
+            # Wait until tomorrow's window start
+            target_datetime = datetime.combine(now.date() + timedelta(days=1), self.window_start_time)
+
+        wait_seconds = (target_datetime - now).total_seconds()
+        if wait_seconds > 0:
+            start_label = self.window_start_time.strftime('%H:%M')
+            logger.info(f"Waiting {wait_seconds:.0f} seconds until execution time window starts ({start_label})")
+
+            # Sleep in 1-minute intervals
+            while wait_seconds > 60:
+                time.sleep(60)
+                wait_seconds -= 60
+                logger.info(f"Still waiting {wait_seconds:.0f} seconds...")
+
+            if wait_seconds > 0:
+                time.sleep(wait_seconds)
+
+        start_label = self.window_start_time.strftime('%H:%M')
+        logger.info(f"Execution time window started ({start_label})")
     
     def kill_browser_processes(self):
         """Kill all Chrome/Chromium browser processes"""
@@ -85,9 +162,9 @@ class BotScheduler:
             # Change to Smart_Play_Bot directory and run bot
             bot_dir = "../Smart_Play_Bot"
             if os.name == 'nt':  # Windows
-                cmd = ["venv/Scripts/python.exe", "-u", "smart_play_bot.py"]
+                cmd = ["../venv/Scripts/python.exe", "-u", "smart_play_bot.py"]
             else:  # Unix/Linux/macOS
-                cmd = ["venv/bin/python", "-u", "smart_play_bot.py"]
+                cmd = ["../venv/bin/python", "-u", "smart_play_bot.py"]
             
             self.bot_process = subprocess.Popen(
                 cmd,
@@ -194,50 +271,60 @@ class BotScheduler:
         """Main scheduler loop"""
         logger.info("Smart Play Bot Scheduler started")
         
+        # Initialize: update config dates and generate random execution time
+        logger.info("Initializing scheduler...")
+        if not self.update_config_dates():
+            logger.error("Failed to update config dates, exiting")
+            return
+        
+        # Wait until the execution window starts
+        self.wait_until_execution_time()
+        
         while True:
             try:
                 current_time = datetime.now()
                 
-                if self.is_time_to_run():
-                    logger.info(f"Time to run bot: {current_time.strftime('%H:%M:%S')}")
+                # Update config dates if it's a new day
+                if current_time.date() != getattr(self, '_last_date', None):
+                    logger.info(f"New day detected. Updating config dates...")
+                    if self.update_config_dates():
+                        self._last_date = current_time.date()
+                
+                # Check if we are within the execution window
+                if not self.is_time_to_run():
+                    start_label = self.window_start_time.strftime('%H:%M')
+                    end_label = self.window_end_time.strftime('%H:%M')
+                    logger.info(f"Outside execution time window ({start_label} - {end_label}), waiting until {start_label}")
+                    self.wait_until_execution_time()
+                    continue
+                
+                # Clean up any existing processes
+                self.cleanup()
+                
+                # Start the bot
+                if self.run_bot():
+                    # Monitor the bot
+                    result = self.monitor_bot()
                     
-                    # Clean up any existing processes
-                    self.cleanup()
-                    
-                    # Start the bot
-                    if self.run_bot():
-                        # Monitor the bot
-                        result = self.monitor_bot()
-                        
-                        if result == "SUCCESS":
-                            logger.info("Bot completed successfully with payment. Scheduler finished.")
-                            break
-                        elif result == "INCOMPLETE":
-                            logger.warning("Bot exited but may not have completed payment, will retry")
-                        elif result == "TIMEOUT":
-                            logger.warning("Bot timed out, will retry")
-                        elif result == "FAILED":
-                            logger.error("Bot failed, will retry")
-                        else:
-                            logger.warning("Bot ended unexpectedly, will retry")
-                        
-                        # Wait before retry
-                        time.sleep(5)
-                    else:
-                        logger.error("Failed to start bot, waiting before retry")
-                        time.sleep(10)
-                else:
-                    # Not time to run yet
-                    if current_time.time() < dt_time(11, 20):
-                        # Before 11:20 AM, wait until then
-                        wait_seconds = (datetime.combine(current_time.date(), dt_time(11, 20)) - current_time).total_seconds()
-                        logger.info(f"Waiting {wait_seconds:.0f} seconds until 11:20 AM")
-                        time.sleep(min(wait_seconds, 60))  # Sleep in 1-minute intervals
-                    else:
-                        # After 11:40 AM, exit
-                        logger.info("Past execution time window, exiting")
+                    if result == "SUCCESS":
+                        logger.info("Bot completed successfully with payment. Scheduler finished.")
                         break
-                        
+                    elif result == "INCOMPLETE":
+                        logger.warning("Bot exited but may not have completed payment, will retry")
+                        time.sleep(5)  # Wait before retry
+                    elif result == "TIMEOUT":
+                        logger.warning("Bot timed out, will retry")
+                        time.sleep(5)  # Wait before retry
+                    elif result == "FAILED":
+                        logger.error("Bot failed, will retry")
+                        time.sleep(5)  # Wait before retry
+                    else:
+                        logger.warning("Bot ended unexpectedly, will retry")
+                        time.sleep(5)  # Wait before retry
+                else:
+                    logger.error("Failed to start bot, waiting before retry")
+                    time.sleep(10)  # Wait before retry
+                    
             except KeyboardInterrupt:
                 logger.info("Scheduler interrupted by user")
                 break
