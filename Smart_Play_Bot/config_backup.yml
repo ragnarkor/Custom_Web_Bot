@@ -1,0 +1,24 @@
+# Smart Play Bot 配置文件
+# 请根据你的实际情况修改以下配置
+
+# 登录信息
+username: "00111426038"
+password: "Jess6033@"
+
+# 预订信息
+district: "九龍城區"
+sport: "籃球"
+sport_item: "籃球場 (空調)(市區)"
+booking_month: "8"
+booking_day: "18"
+timeslot: "下午8時"
+timeslot_list: [["下午8時", "下午9時"],["下午9時", "下午10時"],["下午8時"], ["下午9時"], ["下午10時"]]
+venue: "土瓜灣體育館"
+
+
+# 支付信息
+cardholder: "Chan Tai Man"
+card_num: "5419281455243022"
+expiry_month: "07"
+expiry_year: "23"
+security_code: "000"

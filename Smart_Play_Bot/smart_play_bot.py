@@ -47,6 +47,9 @@ def main(
     expiry_year = config["expiry_year"]
     security_code = config["security_code"]
 
+    pps_card_num = config["pps_card_num"]
+    pps_card_pwd = config["pps_card_pwd"]
+
 
     bot = BookingBot(driver)
     bot.get_login_page()
@@ -72,7 +75,8 @@ def main(
 
 
     print("Starting payment process...")
-    bot.payment(cardholder, card_num, expiry_month, expiry_year, security_code)
+    # bot.payment(cardholder, card_num, expiry_month, expiry_year, security_code)
+    bot.pps_payment(pps_card_num, pps_card_pwd)
     print("Payment process completed successfully!")
 
 

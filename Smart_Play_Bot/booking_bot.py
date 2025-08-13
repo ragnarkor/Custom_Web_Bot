@@ -120,7 +120,7 @@ class BookingBot:
 
 
         ### Select Sport Type
-        time.sleep(1)
+        time.sleep(2)
         self._wait_located(locater=sport_input_field_xpath, _type="xpath")
         SportInputFieldElement = self.driver.find_element(By.XPATH, sport_input_field_xpath)
         SportInputFieldElement.click()
@@ -348,6 +348,71 @@ class BookingBot:
         self.driver.execute_script("arguments[0].click();", ConfirmPaymentButtonElement)
         print("Confirmed")
 
+    def pps_payment(self, pps_card_num:str, pps_card_pwd:str):
+        """ Select payment method and payment processing """
+
+        # Override UA to desktop for payment page only
+        try:
+            self.driver.execute_cdp_cmd("Network.enable", {})
+            self.driver.execute_cdp_cmd(
+                "Network.setUserAgentOverride",
+                {
+                    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+                    "platform": "Windows"
+                },
+            )
+        except Exception:
+            print("UA override skipped")
+            
+        # mastercard_payment_xpath = "/html/body/div/div[2]/div[2]/div/div/div/div[2]/div[7]/div[2]/img"
+        pps_payment_xpath = "/html/body/div/div[2]/div[2]/div/div/div/div[2]/div[19]/div[2]/img"
+        confirm_payment_xpath = "/html/body/div/div[2]/div[2]/div/div/div/div[4]/div[2]/div"
+
+        payment_button_xpath = "/html/body/div[3]/form[1]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/table/tbody/tr[10]/td[2]/a[1]/img"
+
+        # PPS payment
+        time.sleep(1)
+        self._wait_located(locater=pps_payment_xpath, _type="xpath")
+        PPSPaymentButtonElement = self.driver.find_element(By.XPATH, pps_payment_xpath)
+        PPSPaymentButtonElement.click()
+        print("Select PPS")
+
+        time.sleep(1)
+        self._wait_located(locater=confirm_payment_xpath, _type="xpath")
+        ConfirmPaymentButtonElement = self.driver.find_element(By.XPATH, confirm_payment_xpath)
+        self.driver.execute_script("arguments[0].click();", ConfirmPaymentButtonElement)
+
+        # Switch to the new payment tab
+        time.sleep(1)
+        self.driver.switch_to.window(self.driver.window_handles[-1])
+        time.sleep(1)
+
+        print("input pps info")
+
+        card_number_xpath = "/html/body/div[3]/form[1]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/table/tbody/tr[4]/td[2]/input"
+        self._wait_located(locater=card_number_xpath, _type="xpath")
+        self.driver.find_element(By.XPATH, card_number_xpath).send_keys(pps_card_num)
+        print("Input card number")  
+
+        card_pwd_xpath = "/html/body/div[3]/form[1]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/table/tbody/tr[5]/td[2]/input"
+        self._wait_located(locater=card_pwd_xpath, _type="xpath")
+        self.driver.find_element(By.XPATH, card_pwd_xpath).send_keys(pps_card_pwd)
+        print("Input card pwd")  
+
+        check_box_xpath = "/html/body/div[3]/form[1]/table/tbody/tr[4]/td/table/tbody/tr/td[2]/table/tbody/tr[6]/td/input"
+        self._wait_located(locater=check_box_xpath, _type="xpath")
+        CheckBoxElement = self.driver.find_element(By.XPATH, check_box_xpath)
+        CheckBoxElement.click()
+        print("Click check box")
+
+        # Payment button
+        time.sleep(1)
+        self._wait_located(locater=payment_button_xpath, _type="xpath")
+        PaymentButtonElement = self.driver.find_element(By.XPATH, payment_button_xpath)
+        self.driver.execute_script("arguments[0].click();", PaymentButtonElement)
+
+        print("Click Payment Button")
+
     def payment(self, cardholder:str, card_num:str, card_month:str, card_year:str, security_code:str):
         """ Select payment method and payment processing """
 
@@ -362,13 +427,13 @@ class BookingBot:
 
         payment_button_xpath = "/html/body/app-root/app-payment-detail-form/div/div/div/div/div[1]/div[2]/form/div[2]/div/app-pay-button/app-button/div/button"
 
-
         # Mastercard payment
         time.sleep(1)
         self._wait_located(locater=mastercard_payment_xpath, _type="xpath")
         MastercardPaymentButtonElement = self.driver.find_element(By.XPATH, mastercard_payment_xpath)
         MastercardPaymentButtonElement.click()
         print("Select Mastercard")
+
 
         time.sleep(1)
         self._wait_located(locater=confirm_payment_xpath, _type="xpath")
