@@ -24,7 +24,7 @@
 
 ### 启动Scheduler
 ```bash
-# Linux/macOS
+# macOS/Linux
 ./start.sh
 
 # Windows
@@ -41,28 +41,23 @@ import yaml
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# 计算目标日期
 today = datetime.now()
 target_date = today + timedelta(days=6)
 target_month = str(target_date.month)
 target_day = str(target_date.day)
 
-print(f'当前日期: {today.strftime(\"%Y-%m-%d\")}')
-print(f'目标日期 (+6天): {target_date.strftime(\"%Y-%m-%d\")}')
+print(f'当前日期: {today.strftime('%Y-%m-%d')}')
+print(f'目标日期 (+6天): {target_date.strftime('%Y-%m-%d')}')
 print(f'月份: {target_month}, 日期: {target_day}')
 
-# 更新配置文件
 config_file = Path('../Smart_Play_Bot/config.yml')
 if config_file.exists():
     with open(config_file, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
-    
     config['booking_month'] = target_month
     config['booking_day'] = target_day
-    
     with open(config_file, 'w', encoding='utf-8') as f:
         yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-    
     print('配置文件更新成功！')
 else:
     print('找不到配置文件')
@@ -99,16 +94,37 @@ Scheduler_Bot/
 └── README.md            # 说明文档
 ```
 
-## 依赖要求
+## 虚拟环境与依赖安装
 
-- Python 3.7+
-- psutil >= 5.8.0
-- PyYAML >= 6.0
+推荐使用项目根目录的 venv_manager_mac.sh 或 venv_manager_win.bat 脚本自动配置 Scheduler_Bot 的虚拟环境和依赖：
 
-## 安装依赖
-
+### macOS/Linux
 ```bash
-pip install -r requirements.txt
+# 一键创建并安装依赖（首次使用）
+source ../venv_manager_mac.sh setup
+
+# 只激活 Scheduler_Bot 虚拟环境
+source ../venv_manager_mac.sh scheduler
+```
+
+### Windows
+```cmd
+:: 一键创建并安装依赖（首次使用）
+venv_manager_win.bat （选择 1 安装所有虚拟环境）
+
+:: 只激活 Scheduler_Bot 虚拟环境
+venv_manager_win.bat （选择 4 激活 Scheduler_Bot 虚拟环境）
+```
+
+依赖会自动安装到 Scheduler_Bot/venv 目录下。
+
+如需手动操作：
+```bash
+cd Scheduler_Bot
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 ## 日志查看
@@ -124,25 +140,7 @@ tail -n 100 scheduler.log
 ## 注意事项
 
 1. 确保`Smart_Play_Bot`目录存在且包含必要的文件
-2. 确保虚拟环境已正确配置
+2. 确保虚拟环境已正确配置（推荐用 venv_manager_mac.sh 或 venv_manager_win.bat）
 3. 在0-9点执行窗口内会持续尝试，直到预订成功
 4. 保持原有的异常处理、超时控制和成功检测逻辑
 5. 日期会自动设置为当天+6天，适合预订下周的场地
-6. 使用`Ctrl+C`可以停止scheduler
-
-## 示例输出
-
-```
-2024-01-15 10:00:00 - INFO - Smart Play Bot Scheduler started
-2024-01-15 10:00:00 - INFO - Initializing scheduler...
-2024-01-15 10:00:00 - INFO - Current date: 2024-01-15
-2024-01-15 10:00:00 - INFO - Target date (+6 days): 2024-01-21
-2024-01-15 10:00:00 - INFO - Month: 1, Day: 21
-2024-01-15 10:00:00 - INFO - Successfully updated config: booking_month = 1, booking_day = 21
-2024-01-15 10:00:00 - INFO - Waiting 50400 seconds until execution time window starts (00:00)
-2024-01-16 00:00:00 - INFO - Execution time window started (00:00)
-2024-01-16 00:00:01 - INFO - Starting Smart Play Bot
-2024-01-16 00:00:15 - WARNING - Bot timed out, will retry
-2024-01-16 00:00:20 - INFO - Starting Smart Play Bot
-...
-```
