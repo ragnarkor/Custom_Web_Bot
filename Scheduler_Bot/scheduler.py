@@ -38,43 +38,6 @@ class BotScheduler:
         self.window_start_time = dt_time(0, 0)  # start of window (HH:MM)
         self.window_end_time = dt_time(9, 0)     # end of window (HH:MM)
         
-    def update_config_dates(self):
-        """Update config.yml dates to current date + 6 days"""
-        try:
-            config_file = Path(self.bot_dir) / "config.yml"
-            if not config_file.exists():
-                logger.error(f"Config file not found: {config_file}")
-                return False
-            
-            # Calculate target date (current date + 6 days)
-            today = datetime.now()
-            target_date = today + timedelta(days=6)
-            target_month = str(target_date.month)
-            target_day = str(target_date.day)
-            
-            logger.info(f"Current date: {today.strftime('%Y-%m-%d')}")
-            logger.info(f"Target date (+6 days): {target_date.strftime('%Y-%m-%d')}")
-            logger.info(f"Month: {target_month}, Day: {target_day}")
-            
-            # Read existing config
-            with open(config_file, 'r', encoding='utf-8') as f:
-                config = yaml.safe_load(f)
-            
-            # Update dates
-            config['booking_month'] = target_month
-            config['booking_day'] = target_day
-            
-            # Write back to file
-            with open(config_file, 'w', encoding='utf-8') as f:
-                yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-            
-            logger.info(f"Successfully updated config: booking_month = {target_month}, booking_day = {target_day}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to update config dates: {e}")
-            return False
-    
     def is_time_to_run(self):
         """Check if current time is within configured execution window."""
         now = datetime.now().time()
@@ -270,12 +233,7 @@ class BotScheduler:
     def run_scheduler(self):
         """Main scheduler loop"""
         logger.info("Smart Play Bot Scheduler started")
-        
-        # Initialize: update config dates and generate random execution time
         logger.info("Initializing scheduler...")
-        if not self.update_config_dates():
-            logger.error("Failed to update config dates, exiting")
-            return
         
         # Wait until the execution window starts
         self.wait_until_execution_time()
@@ -283,12 +241,6 @@ class BotScheduler:
         while True:
             try:
                 current_time = datetime.now()
-                
-                # Update config dates if it's a new day
-                if current_time.date() != getattr(self, '_last_date', None):
-                    logger.info(f"New day detected. Updating config dates...")
-                    if self.update_config_dates():
-                        self._last_date = current_time.date()
                 
                 # Check if we are within the execution window
                 if not self.is_time_to_run():
