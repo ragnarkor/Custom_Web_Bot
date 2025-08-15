@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Smart Play Bot Scheduler
+Smart Play Bot Scheduler - Optimized Version
 Executes smart_play_bot.py within a configurable daily time window with process monitoring
-Automatically updates config.yml dates to current date + 6 days
 """
 
 import os
@@ -12,15 +11,21 @@ import signal
 import subprocess
 import psutil
 import logging
-from datetime import datetime, time as dt_time
+from datetime import datetime, time as dt_time, timedelta
 from pathlib import Path
+
+# Fix Windows console encoding issues
+if sys.platform.startswith('win'):
+    import codecs
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('scheduler.log'),
+        logging.FileHandler('scheduler.log', encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -30,22 +35,21 @@ class BotScheduler:
     def __init__(self):
         self.bot_process = None
         self.start_time = None
-        self.max_runtime = 15 * 60  # 15 minutes in seconds
+        self.max_runtime = 15 * 60  # 15 minutes
         self.bot_dir = "../Smart_Play_Bot"
-        # Execution window configuration (single source of truth)
-        # Update these two values to change the allowed run window
-        self.window_start_time = dt_time(0, 0)  # start of window (HH:MM)
-        self.window_end_time = dt_time(9, 0)     # end of window (HH:MM)
+        # Execution window configuration
+        self.window_start_time = dt_time(0, 0)
+        self.window_end_time = dt_time(9, 0)
         # Flag to track if we have executed in current window
         self.has_executed_in_window = False
         
     def is_time_to_run(self):
-        """Check if current time is within configured execution window."""
+        """Check if current time is within execution window."""
         now = datetime.now().time()
         return self.window_start_time <= now <= self.window_end_time
     
     def wait_until_execution_time(self):
-        """Wait until the configured execution window starts. Returns True if should continue, False if should stop."""
+        """Wait until execution window starts. Returns True if should continue."""
         now = datetime.now()
         today_start = datetime.combine(now.date(), self.window_start_time)
         today_end = datetime.combine(now.date(), self.window_end_time)
@@ -53,129 +57,101 @@ class BotScheduler:
         if now < today_start:
             target_datetime = today_start
         elif now <= today_end:
-            # Already inside the window; no waiting needed
-            logger.info(
-                f"Execution time window already active "
-                f"({self.window_start_time.strftime('%H:%M')} - {self.window_end_time.strftime('%H:%M')}). Proceeding."
-            )
+            logger.info(f"Execution window active ({self.window_start_time.strftime('%H:%M')} - {self.window_end_time.strftime('%H:%M')})")
             return True
         else:
-            # Past today's window - behavior depends on whether we've executed in current window
-            start_label = self.window_start_time.strftime('%H:%M')
-            end_label = self.window_end_time.strftime('%H:%M')
-            current_time = now.strftime('%H:%M:%S')
-            
+            # Past today's window
             if not self.has_executed_in_window:
-                # First time execution - wait until tomorrow's window
-                logger.info(f"Initial execution: Current time ({current_time}) is after today's execution window ({start_label} - {end_label}). Waiting until tomorrow.")
-                from datetime import timedelta
+                logger.info(f"Initial execution: Waiting until tomorrow ({self.window_start_time.strftime('%H:%M')})")
                 target_datetime = datetime.combine(now.date() + timedelta(days=1), self.window_start_time)
             else:
-                # Already executed in current window - stop execution
-                logger.info(f"Current time ({current_time}) is after execution window ({start_label} - {end_label}). Stopping scheduler after completing window cycle.")
+                logger.info("Execution window ended. Scheduler finished.")
                 return False
 
+        # Wait for target time
         wait_seconds = (target_datetime - now).total_seconds()
         if wait_seconds > 0:
-            start_label = self.window_start_time.strftime('%H:%M')
-            logger.info(f"Waiting {wait_seconds:.0f} seconds until execution time window starts ({start_label})")
-
-            # Sleep in 1-minute intervals
-            while wait_seconds > 60:
-                time.sleep(60)
-                wait_seconds -= 60
-                logger.info(f"Still waiting {wait_seconds:.0f} seconds...")
-
+            logger.info(f"Waiting {wait_seconds/3600:.1f} hours until execution window")
+            
+            # Sleep in 1-hour intervals for long waits
+            while wait_seconds > 3600:
+                time.sleep(3600)
+                wait_seconds -= 3600
+                logger.info(f"Still waiting {wait_seconds/3600:.1f} hours...")
+            
             if wait_seconds > 0:
                 time.sleep(wait_seconds)
 
-        logger.info(f"Execution time window started ({self.window_start_time.strftime('%H:%M')})")
         return True
     
-    def kill_browser_processes(self):
-        """Kill all Chrome/Chromium browser processes"""
-        try:
-            for proc in psutil.process_iter(['pid', 'name']):
-                try:
-                    if proc.info['name'] and any(browser in proc.info['name'].lower() 
-                                               for browser in ['chrome', 'chromium', 'chromedriver']):
-                        logger.info(f"Killing browser process: {proc.info['name']} (PID: {proc.info['pid']})")
-                        proc.terminate()
-                        proc.wait(timeout=5)
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.TimeoutExpired):
-                    continue
-        except Exception as e:
-            logger.error(f"Error killing browser processes: {e}")
-    
-    def kill_bot_process(self):
-        """Kill the bot process if it's running"""
+    def cleanup_processes(self):
+        """Clean up bot and browser processes"""
+        # Kill bot process
         if self.bot_process and self.bot_process.poll() is None:
             try:
-                logger.info("Terminating bot process")
                 self.bot_process.terminate()
                 self.bot_process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                logger.warning("Bot process didn't terminate gracefully, force killing")
-                self.bot_process.kill()
-            except Exception as e:
-                logger.error(f"Error terminating bot process: {e}")
-    
-    def check_timeout(self):
-        """Check if bot has been running too long"""
-        if self.start_time and self.bot_process and self.bot_process.poll() is None:
-            elapsed = time.time() - self.start_time
-            if elapsed > self.max_runtime:
-                logger.warning(f"Bot running for {elapsed:.1f}s, exceeding {self.max_runtime}s limit")
-                return True
-        return False
+            except (subprocess.TimeoutExpired, Exception):
+                try:
+                    self.bot_process.kill()
+                except:
+                    pass
+        
+        # Kill browser processes
+        try:
+            for proc in psutil.process_iter(['name']):
+                if proc.info['name'] and any(browser in proc.info['name'].lower() 
+                                           for browser in ['chrome', 'chromium', 'chromedriver']):
+                    try:
+                        proc.terminate()
+                        proc.wait(timeout=3)
+                    except:
+                        pass
+        except:
+            pass
+        
+        self.bot_process = None
+        self.start_time = None
     
     def run_bot(self):
         """Execute the smart play bot"""
         try:
-            logger.info("Starting Smart Play Bot")
             self.start_time = time.time()
             
-            # Change to Smart_Play_Bot directory and run bot
-            bot_dir = "../Smart_Play_Bot"
+            # Prepare command
             if os.name == 'nt':  # Windows
                 cmd = ["venv/Scripts/python.exe", "-u", "smart_play_bot.py"]
             else:  # Unix/Linux/macOS
                 cmd = ["venv/bin/python", "-u", "smart_play_bot.py"]
             
-            # Clear virtual environment variables to avoid conflicts
+            # Prepare environment
             env = os.environ.copy()
             env.pop('VIRTUAL_ENV', None)
             env.pop('PYTHONHOME', None)
-            # Set PYTHONPATH to ensure correct module loading
-            if os.name == 'nt':  # Windows
-                bot_site_packages = os.path.abspath(os.path.join(bot_dir, "venv", "Lib", "site-packages"))
-            else:  # Unix/Linux/macOS
-                # Find the actual site-packages directory in macOS/Linux
-                import glob
-                venv_lib_path = os.path.join(bot_dir, "venv", "lib")
-                python_dirs = glob.glob(os.path.join(venv_lib_path, "python*"))
-                if python_dirs:
-                    bot_site_packages = os.path.abspath(os.path.join(python_dirs[0], "site-packages"))
-                else:
-                    bot_site_packages = os.path.abspath(os.path.join(venv_lib_path, "site-packages"))
-            env['PYTHONPATH'] = bot_site_packages
-            # Set UTF-8 encoding for Windows console output
             env['PYTHONIOENCODING'] = 'utf-8'
+            
+            # Set PYTHONPATH
+            if os.name == 'nt':
+                site_packages = os.path.join(self.bot_dir, "venv", "Lib", "site-packages")
+            else:
+                import glob
+                python_dirs = glob.glob(os.path.join(self.bot_dir, "venv", "lib", "python*"))
+                site_packages = os.path.join(python_dirs[0], "site-packages") if python_dirs else ""
+            
+            env['PYTHONPATH'] = os.path.abspath(site_packages)
             
             self.bot_process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.STDOUT,  # Combine stderr into stdout
                 text=True,
-                encoding='utf-8',  # Explicitly set UTF-8 encoding
-                errors='replace',  # Replace problematic characters instead of failing
-                cwd=bot_dir,  # Set working directory
-                bufsize=0,    # Unbuffered
-                universal_newlines=True,
-                env=env  # Use cleaned environment
+                encoding='utf-8',
+                errors='replace',
+                cwd=self.bot_dir,
+                env=env
             )
             
-            logger.info(f"Bot process started with PID: {self.bot_process.pid}")
+            logger.info(f"Bot started (PID: {self.bot_process.pid})")
             return True
             
         except Exception as e:
@@ -183,162 +159,119 @@ class BotScheduler:
             return False
     
     def monitor_bot(self):
-        """Monitor bot execution and handle various scenarios"""
-        # Collect all output
-        all_stdout = []
-        all_stderr = []
+        """Monitor bot execution"""
+        output_lines = []
         
         while True:
             if not self.bot_process:
                 break
                 
-            # Check if process is still running
+            # Check if process finished
             if self.bot_process.poll() is not None:
-                # Process has finished
-                stdout, stderr = self.bot_process.communicate()
+                # Get remaining output
+                remaining_output, _ = self.bot_process.communicate()
+                if remaining_output:
+                    output_lines.extend(remaining_output.strip().split('\n'))
+                
+                # Analyze result
                 return_code = self.bot_process.returncode
                 
-                # Add any remaining output
-                if stdout:
-                    all_stdout.append(stdout)
-                if stderr:
-                    all_stderr.append(stderr)
-                
-                # Check if bot actually completed the payment process
-                full_stdout = "".join(all_stdout)
-                full_stderr = "".join(all_stderr)
-                
-                if return_code == 0 and "payment" in full_stdout.lower():
-                    logger.info("Bot completed successfully with payment")
+                if return_code == 0:
+                    # Exit code 0: Payment successful - terminate scheduler
+                    logger.info("[SUCCESS] Bot completed successfully with payment")
                     return "SUCCESS"
-                elif return_code == 0:
-                    logger.warning("Bot exited with code 0 but may not have completed payment")
-                    logger.info("STDOUT: " + full_stdout[-500:])  # Last 500 chars
-                    logger.info("STDERR: " + full_stderr[-500:])  # Last 500 chars
+                elif return_code == 1:
+                    # Exit code 1: Payment failed but bot ran normally - continue polling
+                    logger.warning("[INCOMPLETE] Bot completed but payment failed, will retry")
                     return "INCOMPLETE"
                 else:
-                    logger.error(f"Bot failed with return code: {return_code}")
-                    logger.error(f"STDOUT: {full_stdout[-500:]}")
-                    logger.error(f"STDERR: {full_stderr[-500:]}")
+                    # Other exit codes: Bot crashed or unexpected error - continue polling
+                    logger.error(f"[FAILED] Bot failed with exit code {return_code}, will retry")
+                    # Show last few lines of output for debugging
+                    last_lines = output_lines[-3:] if len(output_lines) >= 3 else output_lines
+                    for line in last_lines:
+                        if line.strip():
+                            logger.error(f"Bot output: {line.strip()}")
                     return "FAILED"
             
             # Check for timeout
-            if self.check_timeout():
-                self.kill_bot_process()
-                self.kill_browser_processes()
+            if self.start_time and time.time() - self.start_time > self.max_runtime:
+                logger.warning(f"[TIMEOUT] Bot timeout after {self.max_runtime/60:.1f} minutes")
+                self.cleanup_processes()
                 return "TIMEOUT"
             
-            # Try to read output in real-time (non-blocking)
+            # Read output line by line
             try:
-                # Check if there's data available without blocking
-                import select
-                
-                # Check stdout
-                if select.select([self.bot_process.stdout], [], [], 0)[0]:
-                    stdout_line = self.bot_process.stdout.readline()
-                    if stdout_line:
-                        line = stdout_line.strip()
-                        print(f"[BOT] {line}")  # Print to console
-                        logger.info(f"[BOT] {line}")  # Log to file
-                        all_stdout.append(line + "\n")
-                
-                # Check stderr
-                if select.select([self.bot_process.stderr], [], [], 0)[0]:
-                    stderr_line = self.bot_process.stderr.readline()
-                    if stderr_line:
-                        line = stderr_line.strip()
-                        print(f"[ERROR] {line}")  # Print to console
-                        logger.error(f"[ERROR] {line}")  # Log to file
-                        all_stderr.append(line + "\n")
-                    
-            except Exception as e:
-                # If non-blocking read fails, continue
+                line = self.bot_process.stdout.readline()
+                if line:
+                    line = line.strip()
+                    if line:  # Only log non-empty lines
+                        output_lines.append(line)
+                        # Only print important messages to console
+                        if any(keyword in line.lower() for keyword in 
+                               ['login', 'error', 'payment', 'booking', 'success', 'failed']):
+                            print(f"[BOT] {line}")
+            except:
                 pass
             
-            time.sleep(0.1)  # Check more frequently for output
+            time.sleep(0.1)
         
         return "UNKNOWN"
     
-    def cleanup(self):
-        """Clean up processes and resources"""
-        self.kill_bot_process()
-        self.kill_browser_processes()
-        self.bot_process = None
-        self.start_time = None
-    
     def run_scheduler(self):
         """Main scheduler loop"""
-        logger.info("Smart Play Bot Scheduler started")
-        logger.info("Initializing scheduler...")
+        logger.info("[START] Smart Play Bot Scheduler started")
         
-        # Wait until the execution window starts
+        # Wait until execution window
         if not self.wait_until_execution_time():
-            return  # Exit if past execution window
+            return
         
         while True:
             try:
-                # Check if we are within the execution window
+                # Check execution window
                 if not self.is_time_to_run():
                     now = datetime.now().time()
-                    start_label = self.window_start_time.strftime('%H:%M')
-                    end_label = self.window_end_time.strftime('%H:%M')
-                    
-                    # If current time is after the window end, check execution flag
                     if now > self.window_end_time:
                         if self.has_executed_in_window:
-                            logger.info(f"Current time ({now.strftime('%H:%M:%S')}) is after execution window ({start_label} - {end_label}). Stopping scheduler after completing window cycle.")
+                            logger.info("Execution window ended. Scheduler finished.")
                             break
                         else:
-                            logger.info(f"Initial execution: Current time ({now.strftime('%H:%M:%S')}) is after execution window ({start_label} - {end_label}). Waiting until tomorrow.")
                             if not self.wait_until_execution_time():
                                 break
                             continue
-                    # If current time is before the window start, wait
                     else:
-                        logger.info(f"Outside execution time window ({start_label} - {end_label}), waiting until {start_label}")
                         if not self.wait_until_execution_time():
-                            break  # Exit if past execution window
+                            break
                         continue
                 
-                # Clean up any existing processes
-                self.cleanup()
+                # Clean up and start bot
+                self.cleanup_processes()
                 
-                # Start the bot
                 if self.run_bot():
-                    # Mark that we have executed in current window
                     self.has_executed_in_window = True
-                    # Monitor the bot
                     result = self.monitor_bot()
                     
                     if result == "SUCCESS":
-                        logger.info("Bot completed successfully with payment. Scheduler finished.")
+                        logger.info("[SUCCESS] Scheduler completed successfully!")
                         break
-                    elif result == "INCOMPLETE":
-                        logger.warning("Bot exited but may not have completed payment, will retry")
-                        time.sleep(5)  # Wait before retry
-                    elif result == "TIMEOUT":
-                        logger.warning("Bot timed out, will retry")
-                        time.sleep(5)  # Wait before retry
-                    elif result == "FAILED":
-                        logger.error("Bot failed, will retry")
-                        time.sleep(5)  # Wait before retry
+                    elif result in ["INCOMPLETE", "TIMEOUT", "FAILED"]:
+                        logger.info("[RETRY] Retrying in 30 seconds...")
+                        time.sleep(30)
                     else:
-                        logger.warning("Bot ended unexpectedly, will retry")
-                        time.sleep(5)  # Wait before retry
+                        time.sleep(30)
                 else:
-                    logger.error("Failed to start bot, waiting before retry")
-                    time.sleep(10)  # Wait before retry
+                    logger.error("Failed to start bot, retrying in 30 seconds...")
+                    time.sleep(30)
                     
             except KeyboardInterrupt:
-                logger.info("Scheduler interrupted by user")
+                logger.info("[STOP] Scheduler stopped by user")
                 break
             except Exception as e:
-                logger.error(f"Unexpected error in scheduler: {e}")
-                time.sleep(10)
+                logger.error(f"Unexpected error: {e}")
+                time.sleep(30)
         
-        # Final cleanup
-        self.cleanup()
-        logger.info("Scheduler finished")
+        self.cleanup_processes()
+        logger.info("[END] Scheduler finished")
 
 def signal_handler(signum, frame):
     """Handle system signals for graceful shutdown"""
@@ -350,17 +283,18 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    # Check if bot script exists
-    if not Path("../Smart_Play_Bot/smart_play_bot.py").exists():
-        logger.error("smart_play_bot.py not found in ../Smart_Play_Bot directory")
-        sys.exit(1)
-    
-    # Check if virtual environment exists
+    # Check prerequisites
+    bot_script = Path("../Smart_Play_Bot/smart_play_bot.py")
     venv_path = Path("../Smart_Play_Bot/venv")
-    if not venv_path.exists():
-        logger.error("Virtual environment not found in ../Smart_Play_Bot directory")
+    
+    if not bot_script.exists():
+        logger.error("[ERROR] smart_play_bot.py not found")
         sys.exit(1)
     
-    # Create and run scheduler
+    if not venv_path.exists():
+        logger.error("[ERROR] Virtual environment not found")
+        sys.exit(1)
+    
+    # Run scheduler
     scheduler = BotScheduler()
     scheduler.run_scheduler()

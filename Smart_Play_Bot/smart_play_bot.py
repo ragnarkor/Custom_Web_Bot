@@ -15,6 +15,7 @@ from selenium.webdriver.common.by import By
 from booking_bot import BookingBot
 import yaml
 import time
+import sys
 
 def extract_config(path):
 
@@ -78,10 +79,16 @@ def main(
     
     bot.wait_for_booking()
 
-
-    print("Starting payment process...")
-    bot.pps_payment(pps_card_num, pps_card_pwd)
-    print("Payment process completed successfully!")
+    payment_success = bot.pps_payment(pps_card_num, pps_card_pwd)
+    
+    if payment_success:
+        print("Payment process completed successfully!")
+        # Set exit code to indicate success
+        sys.exit(0)
+    else:
+        print("Payment process failed!")
+        # Set exit code to indicate failure
+        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -100,3 +107,6 @@ if __name__ == "__main__":
             print(f"Error occurred: {e}")
         except UnicodeEncodeError:
             print(f"Error occurred: {repr(e)}")  # Use repr to avoid encoding issues
+        
+        # Exit with code 2 for unexpected errors (will trigger retry)
+        sys.exit(2)

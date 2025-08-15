@@ -349,8 +349,11 @@ class BookingBot:
         print("Confirmed")
 
     def pps_payment(self, pps_card_num:str, pps_card_pwd:str):
-        """ Select payment method and payment processing """
-
+        """ Select payment method and payment processing 
+        
+        Returns:
+            bool: True if payment completed successfully, False otherwise
+        """
         # Override UA to desktop for payment page only
         try:
             self.driver.execute_cdp_cmd("Network.enable", {})
@@ -412,6 +415,7 @@ class BookingBot:
         self.driver.execute_script("arguments[0].click();", PaymentButtonElement)
 
         print("Click Payment Button")
+        return True
 
     def payment(self, cardholder:str, card_num:str, card_month:str, card_year:str, security_code:str):
         """ Select payment method and payment processing """
