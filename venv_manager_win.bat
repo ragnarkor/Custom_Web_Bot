@@ -58,7 +58,7 @@ if exist "venv" (
         python -m venv venv
         echo 正在安装根目录依赖...
         call venv\Scripts\activate.bat
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
         echo 根目录虚拟环境设置完成!
     ) else (
@@ -69,7 +69,7 @@ if exist "venv" (
     python -m venv venv
     echo 正在安装根目录依赖...
     call venv\Scripts\activate.bat
-    python -m pip install --upgrade pip
+    python -m pip install --upgrade pip setuptools wheel
     pip install -r requirements.txt
     echo 根目录虚拟环境设置完成!
 )
@@ -88,7 +88,7 @@ if exist "Smart_Play_Bot\venv" (
         python -m venv venv
         echo 正在安装 Smart_Play_Bot 依赖...
         call venv\Scripts\activate.bat
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
         cd ..
         echo Smart_Play_Bot 虚拟环境设置完成!
@@ -101,7 +101,7 @@ if exist "Smart_Play_Bot\venv" (
     python -m venv venv
     echo 正在安装 Smart_Play_Bot 依赖...
     call venv\Scripts\activate.bat
-    python -m pip install --upgrade pip
+    python -m pip install --upgrade pip setuptools wheel
     pip install -r requirements.txt
     cd ..
     echo Smart_Play_Bot 虚拟环境设置完成!
@@ -121,7 +121,7 @@ if exist "Scheduler_Bot\venv" (
         python -m venv venv
         echo 正在安装 Scheduler_Bot 依赖...
         call venv\Scripts\activate.bat
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
         cd ..
         echo Scheduler_Bot 虚拟环境设置完成!
@@ -134,7 +134,7 @@ if exist "Scheduler_Bot\venv" (
     python -m venv venv
     echo 正在安装 Scheduler_Bot 依赖...
     call venv\Scripts\activate.bat
-    python -m pip install --upgrade pip
+    python -m pip install --upgrade pip setuptools wheel
     pip install -r requirements.txt
     cd ..
     echo Scheduler_Bot 虚拟环境设置完成!
