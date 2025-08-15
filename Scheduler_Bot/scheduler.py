@@ -31,12 +31,12 @@ class BotScheduler:
     def __init__(self):
         self.bot_process = None
         self.start_time = None
-        self.max_runtime = 15 * 60  # 15 minutes in seconds
+        self.max_runtime = 3 * 60  # 15 minutes in seconds
         self.bot_dir = "../Smart_Play_Bot"
         # Execution window configuration (single source of truth)
         # Update these two values to change the allowed run window
-        self.window_start_time = dt_time(0, 0)  # start of window (HH:MM)
-        self.window_end_time = dt_time(9, 0)     # end of window (HH:MM)
+        self.window_start_time = dt_time(16, 0)  # start of window (HH:MM)
+        self.window_end_time = dt_time(17, 50)     # end of window (HH:MM)
         
     def is_time_to_run(self):
         """Check if current time is within configured execution window."""
@@ -129,6 +129,14 @@ class BotScheduler:
             else:  # Unix/Linux/macOS
                 cmd = ["venv/bin/python", "-u", "smart_play_bot.py"]
             
+            # Clear virtual environment variables to avoid conflicts
+            env = os.environ.copy()
+            env.pop('VIRTUAL_ENV', None)
+            env.pop('PYTHONHOME', None)
+            # Set PYTHONPATH to ensure correct module loading
+            bot_site_packages = os.path.abspath(os.path.join(bot_dir, "venv", "Lib", "site-packages"))
+            env['PYTHONPATH'] = bot_site_packages
+            
             self.bot_process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -136,7 +144,8 @@ class BotScheduler:
                 text=True,
                 cwd=bot_dir,  # Set working directory
                 bufsize=0,    # Unbuffered
-                universal_newlines=True
+                universal_newlines=True,
+                env=env  # Use cleaned environment
             )
             
             logger.info(f"Bot process started with PID: {self.bot_process.pid}")
