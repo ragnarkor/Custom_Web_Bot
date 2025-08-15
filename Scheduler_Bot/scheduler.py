@@ -31,12 +31,12 @@ class BotScheduler:
     def __init__(self):
         self.bot_process = None
         self.start_time = None
-        self.max_runtime = 3 * 60  # 15 minutes in seconds
+        self.max_runtime = 15 * 60  # 15 minutes in seconds
         self.bot_dir = "../Smart_Play_Bot"
         # Execution window configuration (single source of truth)
         # Update these two values to change the allowed run window
-        self.window_start_time = dt_time(16, 0)  # start of window (HH:MM)
-        self.window_end_time = dt_time(17, 50)     # end of window (HH:MM)
+        self.window_start_time = dt_time(0, 0)  # start of window (HH:MM)
+        self.window_end_time = dt_time(9, 0)     # end of window (HH:MM)
         
     def is_time_to_run(self):
         """Check if current time is within configured execution window."""
@@ -44,7 +44,7 @@ class BotScheduler:
         return self.window_start_time <= now <= self.window_end_time
     
     def wait_until_execution_time(self):
-        """Wait until the configured execution window starts."""
+        """Wait until the configured execution window starts. Returns True if should continue, False if should stop."""
         now = datetime.now()
         today_start = datetime.combine(now.date(), self.window_start_time)
         today_end = datetime.combine(now.date(), self.window_end_time)
@@ -57,10 +57,14 @@ class BotScheduler:
                 f"Execution time window already active "
                 f"({self.window_start_time.strftime('%H:%M')} - {self.window_end_time.strftime('%H:%M')}). Proceeding."
             )
-            return
+            return True
         else:
-            # Wait until tomorrow's window start
-            target_datetime = datetime.combine(now.date() + timedelta(days=1), self.window_start_time)
+            # Past today's window - stop execution instead of waiting until tomorrow
+            start_label = self.window_start_time.strftime('%H:%M')
+            end_label = self.window_end_time.strftime('%H:%M')
+            current_time = now.strftime('%H:%M:%S')
+            logger.info(f"Current time ({current_time}) is after today's execution window ({start_label} - {end_label}). Stopping scheduler.")
+            return False
 
         wait_seconds = (target_datetime - now).total_seconds()
         if wait_seconds > 0:
@@ -76,8 +80,8 @@ class BotScheduler:
             if wait_seconds > 0:
                 time.sleep(wait_seconds)
 
-        start_label = self.window_start_time.strftime('%H:%M')
-        logger.info(f"Execution time window started ({start_label})")
+        logger.info(f"Execution time window started ({self.window_start_time.strftime('%H:%M')})")
+        return True
     
     def kill_browser_processes(self):
         """Kill all Chrome/Chromium browser processes"""
@@ -134,14 +138,28 @@ class BotScheduler:
             env.pop('VIRTUAL_ENV', None)
             env.pop('PYTHONHOME', None)
             # Set PYTHONPATH to ensure correct module loading
-            bot_site_packages = os.path.abspath(os.path.join(bot_dir, "venv", "Lib", "site-packages"))
+            if os.name == 'nt':  # Windows
+                bot_site_packages = os.path.abspath(os.path.join(bot_dir, "venv", "Lib", "site-packages"))
+            else:  # Unix/Linux/macOS
+                # Find the actual site-packages directory in macOS/Linux
+                import glob
+                venv_lib_path = os.path.join(bot_dir, "venv", "lib")
+                python_dirs = glob.glob(os.path.join(venv_lib_path, "python*"))
+                if python_dirs:
+                    bot_site_packages = os.path.abspath(os.path.join(python_dirs[0], "site-packages"))
+                else:
+                    bot_site_packages = os.path.abspath(os.path.join(venv_lib_path, "site-packages"))
             env['PYTHONPATH'] = bot_site_packages
+            # Set UTF-8 encoding for Windows console output
+            env['PYTHONIOENCODING'] = 'utf-8'
             
             self.bot_process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                encoding='utf-8',  # Explicitly set UTF-8 encoding
+                errors='replace',  # Replace problematic characters instead of failing
                 cwd=bot_dir,  # Set working directory
                 bufsize=0,    # Unbuffered
                 universal_newlines=True,
@@ -245,7 +263,8 @@ class BotScheduler:
         logger.info("Initializing scheduler...")
         
         # Wait until the execution window starts
-        self.wait_until_execution_time()
+        if not self.wait_until_execution_time():
+            return  # Exit if past execution window
         
         while True:
             try:
@@ -253,11 +272,20 @@ class BotScheduler:
                 
                 # Check if we are within the execution window
                 if not self.is_time_to_run():
+                    now = datetime.now().time()
                     start_label = self.window_start_time.strftime('%H:%M')
                     end_label = self.window_end_time.strftime('%H:%M')
-                    logger.info(f"Outside execution time window ({start_label} - {end_label}), waiting until {start_label}")
-                    self.wait_until_execution_time()
-                    continue
+                    
+                    # If current time is after the window end, stop execution
+                    if now > self.window_end_time:
+                        logger.info(f"Current time ({now.strftime('%H:%M:%S')}) is after execution window ({start_label} - {end_label}). Stopping scheduler.")
+                        break
+                    # If current time is before the window start, wait
+                    else:
+                        logger.info(f"Outside execution time window ({start_label} - {end_label}), waiting until {start_label}")
+                        if not self.wait_until_execution_time():
+                            break  # Exit if past execution window
+                        continue
                 
                 # Clean up any existing processes
                 self.cleanup()

@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import sys
+import os
+
+# Set UTF-8 encoding for Windows console
+if sys.platform.startswith('win'):
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -50,7 +61,7 @@ def main(
     bot.login(username, password)
     bot.search_available_period(booking_month, booking_day, district, sport)
 
-    # driver.get("https://www.smartplay.lcsd.gov.hk/facilities/search-result?district=KC&startDate=2025-08-18&typeCode=BASC&venueCode=&sportCode=BAGM&typeName=%E7%B1%83%E7%90%83&frmFilterType=&venueSportCode=&isFree=false")
+    # driver.get("https://www.smartplay.lcsd.gov.hk/facilities/search-result?district=KC&startDate=2025-08-22&typeCode=BASC&venueCode=&sportCode=BAGM&typeName=%E7%B1%83%E7%90%83&frmFilterType=&venueSportCode=&isFree=false")
 
     bot.select_timeslot(timeslot, venue, sport_item)
     
@@ -85,4 +96,7 @@ if __name__ == "__main__":
         main(options_list, keep_alive=True)
 
     except Exception as e:
-        print(e)
+        try:
+            print(f"Error occurred: {e}")
+        except UnicodeEncodeError:
+            print(f"Error occurred: {repr(e)}")  # Use repr to avoid encoding issues
