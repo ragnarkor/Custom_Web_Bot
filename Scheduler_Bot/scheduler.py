@@ -125,9 +125,9 @@ class BotScheduler:
             # Change to Smart_Play_Bot directory and run bot
             bot_dir = "../Smart_Play_Bot"
             if os.name == 'nt':  # Windows
-                cmd = ["../venv/Scripts/python.exe", "-u", "smart_play_bot.py"]
+                cmd = ["venv/Scripts/python.exe", "-u", "smart_play_bot.py"]
             else:  # Unix/Linux/macOS
-                cmd = ["../venv/bin/python", "-u", "smart_play_bot.py"]
+                cmd = ["venv/bin/python", "-u", "smart_play_bot.py"]
             
             self.bot_process = subprocess.Popen(
                 cmd,
