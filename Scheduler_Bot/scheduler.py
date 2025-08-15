@@ -12,8 +12,7 @@ import signal
 import subprocess
 import psutil
 import logging
-import yaml
-from datetime import datetime, time as dt_time, timedelta
+from datetime import datetime, time as dt_time
 from pathlib import Path
 
 # Setup logging
@@ -37,6 +36,8 @@ class BotScheduler:
         # Update these two values to change the allowed run window
         self.window_start_time = dt_time(0, 0)  # start of window (HH:MM)
         self.window_end_time = dt_time(9, 0)     # end of window (HH:MM)
+        # Flag to track if we have executed in current window
+        self.has_executed_in_window = False
         
     def is_time_to_run(self):
         """Check if current time is within configured execution window."""
@@ -59,12 +60,20 @@ class BotScheduler:
             )
             return True
         else:
-            # Past today's window - stop execution instead of waiting until tomorrow
+            # Past today's window - behavior depends on whether we've executed in current window
             start_label = self.window_start_time.strftime('%H:%M')
             end_label = self.window_end_time.strftime('%H:%M')
             current_time = now.strftime('%H:%M:%S')
-            logger.info(f"Current time ({current_time}) is after today's execution window ({start_label} - {end_label}). Stopping scheduler.")
-            return False
+            
+            if not self.has_executed_in_window:
+                # First time execution - wait until tomorrow's window
+                logger.info(f"Initial execution: Current time ({current_time}) is after today's execution window ({start_label} - {end_label}). Waiting until tomorrow.")
+                from datetime import timedelta
+                target_datetime = datetime.combine(now.date() + timedelta(days=1), self.window_start_time)
+            else:
+                # Already executed in current window - stop execution
+                logger.info(f"Current time ({current_time}) is after execution window ({start_label} - {end_label}). Stopping scheduler after completing window cycle.")
+                return False
 
         wait_seconds = (target_datetime - now).total_seconds()
         if wait_seconds > 0:
@@ -268,18 +277,22 @@ class BotScheduler:
         
         while True:
             try:
-                current_time = datetime.now()
-                
                 # Check if we are within the execution window
                 if not self.is_time_to_run():
                     now = datetime.now().time()
                     start_label = self.window_start_time.strftime('%H:%M')
                     end_label = self.window_end_time.strftime('%H:%M')
                     
-                    # If current time is after the window end, stop execution
+                    # If current time is after the window end, check execution flag
                     if now > self.window_end_time:
-                        logger.info(f"Current time ({now.strftime('%H:%M:%S')}) is after execution window ({start_label} - {end_label}). Stopping scheduler.")
-                        break
+                        if self.has_executed_in_window:
+                            logger.info(f"Current time ({now.strftime('%H:%M:%S')}) is after execution window ({start_label} - {end_label}). Stopping scheduler after completing window cycle.")
+                            break
+                        else:
+                            logger.info(f"Initial execution: Current time ({now.strftime('%H:%M:%S')}) is after execution window ({start_label} - {end_label}). Waiting until tomorrow.")
+                            if not self.wait_until_execution_time():
+                                break
+                            continue
                     # If current time is before the window start, wait
                     else:
                         logger.info(f"Outside execution time window ({start_label} - {end_label}), waiting until {start_label}")
@@ -292,6 +305,8 @@ class BotScheduler:
                 
                 # Start the bot
                 if self.run_bot():
+                    # Mark that we have executed in current window
+                    self.has_executed_in_window = True
                     # Monitor the bot
                     result = self.monitor_bot()
                     
