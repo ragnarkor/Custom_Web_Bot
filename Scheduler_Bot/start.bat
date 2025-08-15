@@ -55,11 +55,9 @@ goto ask_modify
 REM 用 powershell 修改 config.yml
 powershell -Command "(Get-Content '%CONFIG_PATH%') -replace 'booking_month:.*', 'booking_month: ''%NEW_MONTH%''' | Set-Content '%CONFIG_PATH%'"
 powershell -Command "(Get-Content '%CONFIG_PATH%') -replace 'booking_day:.*', 'booking_day: ''%NEW_DAY%''' | Set-Content '%CONFIG_PATH%'"
-echo 配置已更新！
 set "MONTH=%NEW_MONTH%"
 set "DAY=%NEW_DAY%"
 set "WEEKDAY=%NEW_WEEKDAY%"
-pause
 goto run_scheduler
 
 :run_scheduler
