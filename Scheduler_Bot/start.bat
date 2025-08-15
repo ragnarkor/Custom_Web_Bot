@@ -12,8 +12,8 @@ for /f "usebackq tokens=1,2 delims=: " %%A in (`findstr /R "^booking_month: ^boo
     if "%%A"=="booking_day" set "DAY=%%B"
 )
 
-set "MONTH=!MONTH:~1!"
-set "DAY=!DAY:~1!"
+set "MONTH=!MONTH:'=!"
+set "DAY=!DAY:'=!"
 
 REM 计算当前年份
 for /f %%i in ('powershell -Command "[datetime]::Now.Year"') do set YEAR=%%i
