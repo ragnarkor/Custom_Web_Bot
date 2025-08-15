@@ -4,8 +4,8 @@
 
 
 */booker_info.yml
-# */config.yml
-# */config_backup.yml
+*/config.yml
+*/config_backup.yml
 
 # Virtual environment
 .venv/
