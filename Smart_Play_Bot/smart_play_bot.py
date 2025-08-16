@@ -29,7 +29,7 @@ def main(
     keep_alive:bool = False
 ):
 
-    # url = "https://www.smartplay.lcsd.gov.hk/facilities/home"
+    facility_url = "https://www.smartplay.lcsd.gov.hk/facilities/home"
     url = "https://www.smartplay.lcsd.gov.hk/website/tc/index.html"
 
     options = Options()
@@ -63,6 +63,8 @@ def main(
 
     bot.get_login_page()
     bot.login(username, password)
+
+    driver.get(facility_url)
     bot.search_available_period(booking_month, booking_day, district, sport)
 
     # driver.get("https://www.smartplay.lcsd.gov.hk/facilities/search-result?district=KC&startDate=2025-08-22&typeCode=BASC&venueCode=&sportCode=BAGM&typeName=%E7%B1%83%E7%90%83&frmFilterType=&venueSportCode=&isFree=false")

@@ -105,8 +105,6 @@ class BookingBot:
 
         month, day = int(month), int(day)
 
-        facility_button_xpath = "/html/body/div/div[1]/div[1]/div/div[1]/div/div[1]/ul/div[1]/li[2]"
-
         sport_input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div/div[1]"
         input_field_xpath = "/html/body/div/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[1]/div[2]/div[2]/div/div/div[1]/input"
         sport_type_xpath = f"//p[@data-v-21e43f8c and @data-v-42c8b4a0 and contains(text(),'{sport}')]"
@@ -127,12 +125,6 @@ class BookingBot:
             date_xpath = f"//td[@class='available free-date' and .//span[normalize-space(text())={day}]]"
 
         search_button_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div/div/div/div/div[3]/div[4]/div"
-
-        ## Select Facility
-        time.sleep(1)
-        self._wait_located(locater=facility_button_xpath, _type="xpath")
-        FacilityButtonElement = self.driver.find_element(By.XPATH, facility_button_xpath)
-        FacilityButtonElement.click()
 
         ### Select Sport Type
         time.sleep(1)
