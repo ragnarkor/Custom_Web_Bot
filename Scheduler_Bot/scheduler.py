@@ -16,7 +16,6 @@ from pathlib import Path
 
 # Fix Windows console encoding issues
 if sys.platform.startswith('win'):
-    import codecs
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
@@ -35,7 +34,6 @@ class BotScheduler:
     def __init__(self):
         self.bot_process = None
         self.start_time = None
-        self.max_runtime = 15 * 60  # 15 minutes
         self.bot_dir = "../Smart_Play_Bot"
         # Execution window configuration
         self.window_start_time = dt_time(0, 0)
@@ -194,12 +192,6 @@ class BotScheduler:
                             logger.error(f"Bot output: {line.strip()}")
                     return "FAILED"
             
-            # Check for timeout
-            if self.start_time and time.time() - self.start_time > self.max_runtime:
-                logger.warning(f"[TIMEOUT] Bot timeout after {self.max_runtime/60:.1f} minutes")
-                self.cleanup_processes()
-                return "TIMEOUT"
-            
             # Read output line by line
             try:
                 line = self.bot_process.stdout.readline()
@@ -254,14 +246,14 @@ class BotScheduler:
                     if result == "SUCCESS":
                         logger.info("[SUCCESS] Scheduler completed successfully!")
                         break
-                    elif result in ["INCOMPLETE", "TIMEOUT", "FAILED"]:
-                        logger.info("[RETRY] Retrying in 30 seconds...")
-                        time.sleep(30)
+                    elif result in ["INCOMPLETE", "FAILED"]:
+                        logger.info("[RETRY] Retrying in 5 seconds...")
+                        time.sleep(5)
                     else:
-                        time.sleep(30)
+                        time.sleep(5)
                 else:
-                    logger.error("Failed to start bot, retrying in 30 seconds...")
-                    time.sleep(30)
+                    logger.error("Failed to start bot, retrying in 5 seconds...")
+                    time.sleep(5)
                     
             except KeyboardInterrupt:
                 logger.info("[STOP] Scheduler stopped by user")
