@@ -459,20 +459,20 @@ class BookingBot:
                 time.sleep(1)
                 continue
 
-def wait_until_queue_empty(self):
+    def wait_until_queue_empty(self):
 
-    label_xpath = "//p[contains(text(), '輪候隊伍前方人數')]"
-    value_xpath = label_xpath + "/following-sibling::p[1]"
-    exit_button_xpath = "/html/body/div/div[2]/div[2]/div/div/div/div[3]/div[2]/div"
+        label_xpath = "//p[contains(text(), '輪候隊伍前方人數')]"
+        value_xpath = label_xpath + "/following-sibling::p[1]"
+        exit_button_xpath = "/html/body/div/div[2]/div[2]/div/div/div/div[3]/div[2]/div"
 
-    try:
-        LabelElement = self.driver.find_element(By.XPATH, label_xpath)
-        ValueElement = LabelElement.find_element(By.XPATH, value_xpath)
-        if LabelElement and ValueElement:
-            self._wait_located(locater=exit_button_xpath, _type="xpath")
-            ExitButtonElement = self.driver.find_element(By.XPATH, exit_button_xpath)
-            self.driver.execute_script("arguments[0].click();", ExitButtonElement)
-    except Exception as e:
-        pass
+        try:
+            LabelElement = self.driver.find_element(By.XPATH, label_xpath)
+            ValueElement = LabelElement.find_element(By.XPATH, value_xpath)
+            if LabelElement and ValueElement:
+                self._wait_located(locater=exit_button_xpath, _type="xpath")
+                ExitButtonElement = self.driver.find_element(By.XPATH, exit_button_xpath)
+                self.driver.execute_script("arguments[0].click();", ExitButtonElement)
+        except Exception as e:
+            pass
 
     
