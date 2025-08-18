@@ -35,10 +35,10 @@ class BotScheduler:
     def __init__(self):
         self.bot_process = None
         self.start_time = None
-        self.max_runtime = 15 * 60  # 15 minutes
+        self.max_runtime = 30 * 60  # 30 minutes
         self.bot_dir = "../Smart_Play_Bot"
         # Execution window configuration
-        self.window_start_time = dt_time(0, 0)
+        self.window_start_time = dt_time(7, 0)
         self.window_end_time = dt_time(9, 0)
         # Flag to track if we have executed in current window
         self.has_executed_in_window = False
@@ -255,20 +255,20 @@ class BotScheduler:
                         logger.info("[SUCCESS] Scheduler completed successfully!")
                         break
                     elif result in ["INCOMPLETE", "TIMEOUT", "FAILED"]:
-                        logger.info("[RETRY] Retrying in 30 seconds...")
-                        time.sleep(30)
+                        logger.info("[RETRY] Retrying in 1 second...")
+                        time.sleep(1)
                     else:
-                        time.sleep(30)
+                        time.sleep(1)
                 else:
-                    logger.error("Failed to start bot, retrying in 30 seconds...")
-                    time.sleep(30)
+                    logger.error("Failed to start bot, retrying in 1 second...")
+                    time.sleep(1)
                     
             except KeyboardInterrupt:
                 logger.info("[STOP] Scheduler stopped by user")
                 break
             except Exception as e:
                 logger.error(f"Unexpected error: {e}")
-                time.sleep(30)
+                time.sleep(1)
         
         self.cleanup_processes()
         logger.info("[END] Scheduler finished")

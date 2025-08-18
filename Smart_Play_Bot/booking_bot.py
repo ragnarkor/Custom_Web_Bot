@@ -76,6 +76,68 @@ class BookingBot:
             self.driver.execute_script("arguments[0].click();", LoginButtonElement)
 
             print("Logged in")
+            
+    def login_in_process(self, username=None, password=None):
+        """ Input user account info and Login """
+
+        username_xpath = "//input[@class='el-input__inner' and @name='pc-login-username']"
+        password_xpath = "//input[@type='password' and @name='pc-login-password']"
+        login_button_xpath = "//div[@data-v-8c95f640='' and @role='button' and contains(text(), '登入')]"
+
+        if username and password:
+            UsernameField = self.driver.find_element(By.XPATH, username_xpath)
+            UsernameField.clear()
+            UsernameField.send_keys(username)
+
+            PasswordField = self.driver.find_element(By.XPATH, password_xpath)
+            PasswordField.clear()
+            PasswordField.send_keys(password)
+
+            time.sleep(0.5)
+
+            LoginButtonElement = self.driver.find_element(By.XPATH, login_button_xpath)
+            self.driver.execute_script("arguments[0].click();", LoginButtonElement)
+
+            print("Logged in")
+
+    def monitor_dialog(self):
+        """Monitor if the error dialog or login dialog is present, and handle accordingly."""
+        error_dialog_xpath = "//div[@role='dialog' and @id='dialog' and .//div[@class='button' and contains(text(), '關閉')]]"
+        close_btn_xpath = ".//div[@class='button' and contains(text(), '關閉')]"
+        login_dialog_xpath = "//div[@role='dialog' and @class='el-dialog' and .//*[contains(text(), '登入')]]"
+        
+        try:
+            ErrorDialogElement = self.driver.find_element(By.XPATH, error_dialog_xpath)
+            if ErrorDialogElement.is_displayed():
+                CloseBtnElement = ErrorDialogElement.find_element(By.XPATH, close_btn_xpath)
+                self.driver.execute_script("arguments[0].click();", CloseBtnElement)
+                print("Closed error dialog")
+                return True
+        except Exception:
+            pass
+
+        # Then, check for the login dialog
+        try:
+            LoginDialogElement = self.driver.find_element(By.XPATH, login_dialog_xpath)
+            if LoginDialogElement.is_displayed():
+                return True
+        except Exception:
+            pass
+
+        return False
+
+    def run_with_login_monitor(self, func, *args, username=None, password=None, **kwargs):
+        """Continuously monitor login dialog and retry the function until it succeeds. If the function raises an exception, it will be propagated to the outer layer."""
+        while True:
+            if self.monitor_dialog():
+                self.login_in_process(username, password)
+            
+            try:
+                result = func(*args, **kwargs)
+                return result
+            except Exception:
+                time.sleep(1)
+                continue
 
     def check_waiting_queue(self):
         image_xpath = "//img[@src='/static/img/virtual-queue.gif' and @alt='smartplay']"
@@ -252,6 +314,8 @@ class BookingBot:
     def check_timeslot_availability(self, timeslot_list:list):
         """ Check the timeslot availability """
 
+        continue_button_xpath = "//div[@data-v-8c95f640 and @class='xp-button xp-primary-d']//div[@tabindex='0' and @role='button']"
+
         self._clear_selected_sessions()
 
         i = 0
@@ -286,7 +350,12 @@ class BookingBot:
                     sibling_element = self.driver.find_element(By.XPATH, sibling_xpath)
                     self.driver.execute_script("arguments[0].click();", sibling_element)
                     time.sleep(0.5)
-                
+
+                # Click continue button
+                time.sleep(1)
+                self._wait_located(locater=continue_button_xpath, _type="xpath")
+                ContinueButtonElement = self.driver.find_element(By.XPATH, continue_button_xpath)
+                self.driver.execute_script("arguments[0].click();", ContinueButtonElement)                
                 print(f"Available group: {current_timeslot_group}")
                 break
             else:
@@ -300,7 +369,6 @@ class BookingBot:
 
     def wait_for_booking(self):
         """ Wait for booking """
-        continue_button_xpath = "//div[@data-v-8c95f640 and @class='xp-button xp-primary-d']//div[@tabindex='0' and @role='button']"
         cancel_button_xpath = "//div[@class='dialog-box' and @role='dialog']/div[@class='btn-box']/div[@class='cancel-button' and @role='button']"
         continue2_button_xpath = "/html/body/div/div[2]/div[4]/div/div/div/div[2]/div/div[2]/div[2]/div"
 
@@ -308,11 +376,6 @@ class BookingBot:
         checkbox2_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[1]/div[2]/div/div[2]/div/div[1]/img"
         confirm_button_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[2]/div/div/div[1]/div[2]/div[2]/div"
         confirm_payment_xpath = "/html/body/div/div[2]/div[3]/div/div/div/div[3]/div[2]/div"
-
-        time.sleep(1)
-        self._wait_located(locater=continue_button_xpath, _type="xpath")
-        ContinueButtonElement = self.driver.find_element(By.XPATH, continue_button_xpath)
-        self.driver.execute_script("arguments[0].click();", ContinueButtonElement)
 
         time.sleep(1)
         self._wait_located(locater=cancel_button_xpath, _type="xpath")

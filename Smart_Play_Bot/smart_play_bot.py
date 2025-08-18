@@ -5,9 +5,16 @@ import os
 
 # Set UTF-8 encoding for Windows console
 if sys.platform.startswith('win'):
-    import codecs
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+    try:
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+        print("UTF-8 encoding configured successfully")
+    except Exception as e:
+        print(f"Warning: Could not configure UTF-8 encoding: {e}")
+        # Continue without UTF-8 encoding
+        pass
+
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -18,11 +25,13 @@ import time
 import sys
 
 def extract_config(path):
-
-    with open(path, "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file)
-
-    return config
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            config = yaml.safe_load(file)
+        return config
+    except Exception as e:
+        print(f"Error loading config: {e}")
+        raise
 
 def main(
     options_list:list = [],
@@ -68,16 +77,15 @@ def main(
     
     # Poll for available timeslots
     while True:
-        if bot.check_timeslot_availability(timeslot_list):
-            print("Available timeslots found, proceeding to booking")
+        if bot.run_with_login_monitor(bot.check_timeslot_availability,timeslot_list, username=username, password=password):
             break
         else:
-            print("No available timeslots, waiting 1 minute and refreshing...")
-            time.sleep(60)
+            print("No available timeslots, refreshing...")
+            time.sleep(1)
             driver.refresh()
             time.sleep(2)  # Wait for page to load
-    
-    bot.wait_for_booking()
+
+    bot.run_with_login_monitor(bot.wait_for_booking, username=username, password=password)
 
     payment_success = bot.pps_payment(pps_card_num, pps_card_pwd)
     
@@ -105,6 +113,9 @@ if __name__ == "__main__":
     except Exception as e:
         try:
             print(f"Error occurred: {e}")
+            import traceback
+            print("Full traceback:")
+            traceback.print_exc()
         except UnicodeEncodeError:
             print(f"Error occurred: {repr(e)}")  # Use repr to avoid encoding issues
         
